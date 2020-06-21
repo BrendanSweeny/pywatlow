@@ -28,4 +28,5 @@ def main(argv=sys.argv):
     Does stuff.
     """
     print(argv)
+    print('cli file')
     return 0
