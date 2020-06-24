@@ -3,8 +3,6 @@ import crcmod
 import struct
 from binascii import unhexlify, hexlify
 
-print('pywatlow file')
-
 class PM3():
     '''
     Object representing a Watlow PM3 PID temperature controller
