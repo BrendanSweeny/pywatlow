@@ -15,6 +15,7 @@ Why does this file exist, and why not put this in __main__?
   Also see (1) from http://click.pocoo.org/5/setuptools/#setuptools-integration
 """
 import argparse
+
 from pywatlow.PM3 import PM3
 
 parser = argparse.ArgumentParser(description='A Python driver for Watlow temperature controllers')

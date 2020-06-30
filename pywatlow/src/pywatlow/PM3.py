@@ -1,7 +1,9 @@
-import serial as ser
-import crcmod
 import struct
-from binascii import unhexlify, hexlify
+from binascii import hexlify
+from binascii import unhexlify
+
+import crcmod
+import serial as ser
 
 
 class PM3():

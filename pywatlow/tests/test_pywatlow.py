@@ -1,9 +1,10 @@
 
-from pywatlow.cli import main
-from pywatlow.PM3 import PM3
+from binascii import unhexlify
 
 import pytest
-from binascii import unhexlify
+
+from pywatlow.cli import main
+from pywatlow.PM3 import PM3
 
 
 def test_main():
