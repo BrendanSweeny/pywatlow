@@ -3,6 +3,7 @@ import crcmod
 import struct
 from binascii import unhexlify, hexlify
 
+
 class PM3():
     '''
     Object representing a Watlow PM3 PID temperature controller
@@ -76,9 +77,9 @@ class PM3():
         ]
 
         # Watlow's header check byte algorithm:
-        intCheck = ~crc_8_table[headerBytes[6] ^ crc_8_table[headerBytes[5] ^ \
-                  crc_8_table[headerBytes[4] ^ crc_8_table[headerBytes[3] ^ \
-                  crc_8_table[~headerBytes[2]]]]]] & (2**8-1)
+        intCheck = ~crc_8_table[headerBytes[6] ^ crc_8_table[headerBytes[5] ^
+                                crc_8_table[headerBytes[4] ^ crc_8_table[headerBytes[3] ^
+                                            crc_8_table[~headerBytes[2]]]]]] & (2**8-1)
         return bytes([intCheck])
 
     def _dataCheckByte(self, dataBytes):
@@ -171,8 +172,6 @@ class PM3():
     def _validateResponse(self, bytesResponse):
         '''
         Compares check bytes received in response to those calculated
-
-        TODO: make sure this checks that the address in response is correct
         '''
         isValid = False
         # Evaluate headerChk as bytearray instead of as an int (which is how
@@ -180,9 +179,9 @@ class PM3():
         headerChkReceived = bytearray([bytesResponse[7]])
         dataCheckRecieved = bytesResponse[-2:]
         addressReceived = int(bytesResponse.hex()[8:10]) - 9
-        if (headerChkReceived == self._headerCheckByte(bytesResponse[0:7]) and \
-            dataCheckRecieved == self._dataCheckByte(bytesResponse[8:-2]) and \
-            addressReceived == self.address):
+        if (headerChkReceived == self._headerCheckByte(bytesResponse[0:7]) and
+                dataCheckRecieved == self._dataCheckByte(bytesResponse[8:-2]) and
+                addressReceived == self.address):
             isValid = True
         return isValid
 
@@ -199,7 +198,6 @@ class PM3():
                 print('Invalid Response at address {0}: '.format(self.address), hexlify(bytesResponse))
                 raise Exception('Exception: Invalid response received from address {0}'.format(self.address))
         except Exception as e:
-            #print(e)
             output = {
                         'address': self.address,
                         'data': None,
@@ -208,8 +206,6 @@ class PM3():
         else:
 
             ieee_754 = hexlify(bytesResponse[-6:-2])
-            #print('response: ', hexlify(bytesResponse))
-            #print('ieee_754: ', ieee_754)
             data = struct.unpack('>f', unhexlify(ieee_754))[0]
             output = {
                         'address': self.address,

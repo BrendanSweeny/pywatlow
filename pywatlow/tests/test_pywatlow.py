@@ -5,12 +5,15 @@ from pywatlow.PM3 import PM3
 import pytest
 from binascii import unhexlify
 
+
 def test_main():
     assert main([]) == 0
+
 
 def test_PM3():
     pm3 = PM3()
     assert pm3.address == 1
+
 
 class TestPM3:
     '''
@@ -20,36 +23,36 @@ class TestPM3:
     '''
 
     def test_dataCheckByte(self):
-         '''
-         Test that the correct check byte is calculated from the data portion
-         of the hex command
+        '''
+        Test that the correct check byte is calculated from the data portion
+        of the hex command
 
-         _dataCheckByte is the only function scored in this test
-         '''
-         test_pm3_address1 = PM3(serial=None)
-         test_data = {
-             # Request, Address 1, '4001'
-             '55ff0510000006e8010301040101e399': b'\xe3\x99',
-             # Request, Address 2, '4001'
-             '55ff051100000661010301040101e399': b'\xe3\x99',
-             # Request, Address 2, '7001'
-             '55ff0511000006610103010701018776': b'\x87\x76',
-             # Responses (not necessarily from requests above)
-             '55FF060010000B8802030104010108468F3638DD0E': b'\xdd\x0e',
-             '55ff060010000b8802030104010108468f3abe4346': b'\x43\x46',
-             '55ff060011000b1002030104010108468f393a07ae': b'\x07\xae',
-             '55ff060011000b100203010701010842960000d3b0': b'\xd3\xb0'
-         }
+        _dataCheckByte is the only function scored in this test
+        '''
+        test_pm3_address1 = PM3(serial=None)
+        test_data = {
+            # Request, Address 1, '4001'
+            '55ff0510000006e8010301040101e399': b'\xe3\x99',
+            # Request, Address 2, '4001'
+            '55ff051100000661010301040101e399': b'\xe3\x99',
+            # Request, Address 2, '7001'
+            '55ff0511000006610103010701018776': b'\x87\x76',
+            # Responses (not necessarily from requests above)
+            '55FF060010000B8802030104010108468F3638DD0E': b'\xdd\x0e',
+            '55ff060010000b8802030104010108468f3abe4346': b'\x43\x46',
+            '55ff060011000b1002030104010108468f393a07ae': b'\x07\xae',
+            '55ff060011000b100203010701010842960000d3b0': b'\xd3\xb0'
+        }
 
-         for hexCommand in test_data:
-             # Assert that the key passed to _dataCheckByte results in the
-             # corresponding test_data value:
-             dataCheckByte = test_pm3_address1._dataCheckByte(unhexlify(hexCommand)[8:-2])
-             assert dataCheckByte == test_data[hexCommand], hexCommand
-             # Assert that the check byte length is equal to two:
-             assert len(dataCheckByte) == 2, hexCommand
-             # Assert that the result is an instance of type 'bytes'
-             assert isinstance(dataCheckByte, bytes), hexCommand
+        for hexCommand in test_data:
+            # Assert that the key passed to _dataCheckByte results in the
+            # corresponding test_data value:
+            dataCheckByte = test_pm3_address1._dataCheckByte(unhexlify(hexCommand)[8:-2])
+            assert dataCheckByte == test_data[hexCommand], hexCommand
+            # Assert that the check byte length is equal to two:
+            assert len(dataCheckByte) == 2, hexCommand
+            # Assert that the result is an instance of type 'bytes'
+            assert isinstance(dataCheckByte, bytes), hexCommand
 
     def test_headerCheckByte(self):
         '''
@@ -168,18 +171,18 @@ class TestPM3:
             ('55ff060010000b8802030104010108468f3abe4346', 1, True),
             ('55FF060010000B8802030104010108468F3638DD0E', 1, True),
             ('55ff060010000b8802030104010108468f3abe4346', 1, True),
-            ('55ff060011000b1002030104010108468f3c3c89b5', 1, False), # Wrong address
-            ('55ff060011000b1002030104010108468f393a07ae', 1, False), # Wrong address
-            ('55ff060010000b8802030104010108468f3abe4356', 1, False), # Incorrect dataChk
-            ('55FF060010000B8902030104010108468F3638DD0E', 1, False), # Incorrect headerChk
-            ('55FF060010000B8802030104010108468F3638DD0E', 2, False), # Wrong address
-            ('55ff060010000b8802030104010108468f3abe4346', 2, False), # Wrong address
-            ('55FF060010000B8802030104010108468F3638DD0E', 2, False), # Wrong address
-            ('55ff060010000b8802030104010108468f3abe4346', 2, False), # Wrong address
+            ('55ff060011000b1002030104010108468f3c3c89b5', 1, False),  # Wrong address
+            ('55ff060011000b1002030104010108468f393a07ae', 1, False),  # Wrong address
+            ('55ff060010000b8802030104010108468f3abe4356', 1, False),  # Incorrect dataChk
+            ('55FF060010000B8902030104010108468F3638DD0E', 1, False),  # Incorrect headerChk
+            ('55FF060010000B8802030104010108468F3638DD0E', 2, False),  # Wrong address
+            ('55ff060010000b8802030104010108468f3abe4346', 2, False),  # Wrong address
+            ('55FF060010000B8802030104010108468F3638DD0E', 2, False),  # Wrong address
+            ('55ff060010000b8802030104010108468f3abe4346', 2, False),  # Wrong address
             ('55ff060011000b1002030104010108468f3c3c89b5', 2, True),
             ('55ff060011000b1002030104010108468f393a07ae', 2, True),
-            ('55ff060010000b8802030104010108468f3abe4356', 2, False), # Incorrect dataChk
-            ('55FF060010000B8902030104010108468F3638DD0E', 2, False) # Incorrect headerChk
+            ('55ff060010000b8802030104010108468f3abe4356', 2, False),  # Incorrect dataChk
+            ('55FF060010000B8902030104010108468F3638DD0E', 2, False)  # Incorrect headerChk
         ]
 
         for test in tests:

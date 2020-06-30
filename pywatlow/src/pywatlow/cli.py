@@ -14,16 +14,16 @@ Why does this file exist, and why not put this in __main__?
 
   Also see (1) from http://click.pocoo.org/5/setuptools/#setuptools-integration
 """
-import sys
 import argparse
 from pywatlow.PM3 import PM3
 
 parser = argparse.ArgumentParser(description='A Python driver for Watlow temperature controllers')
 group = parser.add_mutually_exclusive_group()
 group.add_argument('-r', '--read', metavar=('PORT', 'ADDR', 'PARAM'), nargs=3,
-                    help='Read a specific Watlow parameter. Specify the port, RS485 address, and parameter to read (e.g. "4001" for temperature, "7001" for setpoint). Other values can be found in the Watlow user manual')
+                   help='Read a specific Watlow parameter. Specify the port, RS485 address, and parameter to read \
+                   (e.g. "4001" for temperature, "7001" for setpoint). Other values can be found in the Watlow user manual')
 group.add_argument('-s', '--set', metavar=('PORT', 'ADDR', 'TEMP'), nargs=3,
-                    help='Change the setpoint temperature. Specify the port, RS485 address, and desired setpoint temperature in Celcius')
+                   help='Change the setpoint temperature. Specify the port, RS485 address, and desired setpoint temperature in Celcius')
 
 
 def main(args=None):
