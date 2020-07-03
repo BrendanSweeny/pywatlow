@@ -4,23 +4,23 @@ from binascii import unhexlify
 import pytest
 
 from pywatlow.cli import main
-from pywatlow.PM3 import PM3
+from pywatlow.Watlow import Watlow
 
 
 def test_main():
-    assert main([]) == 0
+    main([]) == 0
 
 
-def test_PM3():
-    pm3 = PM3()
-    assert pm3.address == 1
+def test_watlow():
+    watlow = Watlow()
+    assert watlow.address == 1
 
 
-class TestPM3:
+class TestWatlow:
     '''
-    Test suite for the PM3 class
-    * Each command was varified with a response from Watlow PM3
-    * Each response was a real response from a Watlow PM3
+    Test suite for the Watlow class
+    * Each command was varified with a response from Watlow device
+    * Each response was a real response from a Watlow device
     '''
 
     def test_dataCheckByte(self):
@@ -30,7 +30,7 @@ class TestPM3:
 
         _dataCheckByte is the only function scored in this test
         '''
-        test_pm3_address1 = PM3(serial=None)
+        test_watlow_address1 = Watlow(serial=None)
         test_data = {
             # Request, Address 1, '4001'
             '55ff0510000006e8010301040101e399': b'\xe3\x99',
@@ -48,7 +48,7 @@ class TestPM3:
         for hexCommand in test_data:
             # Assert that the key passed to _dataCheckByte results in the
             # corresponding test_data value:
-            dataCheckByte = test_pm3_address1._dataCheckByte(unhexlify(hexCommand)[8:-2])
+            dataCheckByte = test_watlow_address1._dataCheckByte(unhexlify(hexCommand)[8:-2])
             assert dataCheckByte == test_data[hexCommand], hexCommand
             # Assert that the check byte length is equal to two:
             assert len(dataCheckByte) == 2, hexCommand
@@ -64,7 +64,7 @@ class TestPM3:
 
         _headerCheckByte is the only function scored by this test
         '''
-        test_pm3_address1 = PM3(serial=None)
+        test_watlow_address1 = Watlow(serial=None)
         test_data = {
             # Request, Address 1, '4001'
             '55ff0510000006e8010301040101e399': b'\xe8',
@@ -84,7 +84,7 @@ class TestPM3:
         for hexCommand in test_data:
             # Assert that the key passed to _headerCheckByte results in the
             # corresponding test_data value:
-            headerCheckByte = test_pm3_address1._headerCheckByte(unhexlify(hexCommand)[0:7])
+            headerCheckByte = test_watlow_address1._headerCheckByte(unhexlify(hexCommand)[0:7])
             assert headerCheckByte == test_data[hexCommand]
             # Assert that the check byte length is equal to one:
             assert len(headerCheckByte) == 1, hexCommand
@@ -108,7 +108,7 @@ class TestPM3:
         ]
 
         for test in test_data:
-            readRequest = PM3(serial=None, address=test[1])._buildReadRequest(dataParam=test[0])
+            readRequest = Watlow(serial=None, address=test[1])._buildReadRequest(dataParam=test[0])
             assert readRequest == unhexlify(test[2]), "param: {0}, addr: {1}, request: {2}".format(*test)
 
     def test_buildSetTempRequest(self):
@@ -127,7 +127,7 @@ class TestPM3:
         ]
 
         for test in test_data:
-            setTempRequest = PM3(serial=None, address=test[1])._buildSetTempRequest(value=test[0])
+            setTempRequest = Watlow(serial=None, address=test[1])._buildSetTempRequest(value=test[0])
             assert setTempRequest == unhexlify(test[2]), "param: {0}, addr: {1}, request: {2}".format(*test)
 
     def test_c_to_f(self):
@@ -142,7 +142,7 @@ class TestPM3:
         ]
 
         for test in test_data:
-            convertedTemp = PM3(serial=None)._c_to_f(test[0])
+            convertedTemp = Watlow(serial=None)._c_to_f(test[0])
             assert convertedTemp == pytest.approx(test[1])
 
     def test_f_to_c(self):
@@ -157,7 +157,7 @@ class TestPM3:
         ]
 
         for test in test_data:
-            convertedTemp = PM3(serial=None)._f_to_c(test[0])
+            convertedTemp = Watlow(serial=None)._f_to_c(test[0])
             assert convertedTemp == pytest.approx(test[1])
 
     def test_validateResponse(self):
@@ -187,5 +187,5 @@ class TestPM3:
         ]
 
         for test in tests:
-            validateResponse = PM3(serial=None, address=test[1])._validateResponse(unhexlify(test[0]))
+            validateResponse = Watlow(serial=None, address=test[1])._validateResponse(unhexlify(test[0]))
             assert validateResponse == test[2], 'msg: {0}, addr: {1}, bool: {2}'.format(*test)

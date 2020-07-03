@@ -6,9 +6,9 @@ import crcmod
 import serial as ser
 
 
-class PM3():
+class Watlow():
     '''
-    Object representing a Watlow PM3 PID temperature controller
+    Object representing a Watlow PID temperature controller
     '''
     def __init__(self, serial=None, port=None, timeout=0.5, address=1):
         self.timeout = timeout
@@ -29,10 +29,10 @@ class PM3():
         self.serial.close()
 
     def _f_to_c(self, f):
-        return (f - 32) * (5/9)
+        return (float(f) - 32) * (5/9)
 
     def _c_to_f(self, c):
-        return (c * (9/5)) + 32
+        return (float(c) * (9/5)) + 32
 
     def _headerCheckByte(self, headerBytes):
         '''
@@ -242,9 +242,9 @@ class PM3():
 
     def setTemp(self, value):
         '''
-        Changes the watlow PM3 temperature setpoint
+        Changes the watlow temperature setpoint
 
-        Takes a value (in degrees C), builds request, writes to watlow PM3,
+        Takes a value (in degrees C), builds request, writes to watlow,
         receives and returns response object
         '''
         value = self._c_to_f(value)

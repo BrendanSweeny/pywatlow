@@ -16,7 +16,7 @@ Why does this file exist, and why not put this in __main__?
 """
 import argparse
 
-from pywatlow.PM3 import PM3
+from pywatlow.Watlow import Watlow
 
 parser = argparse.ArgumentParser(description='A Python driver for Watlow temperature controllers')
 group = parser.add_mutually_exclusive_group()
@@ -35,9 +35,9 @@ def main(args=None):
     args = parser.parse_args(args=args)
 
     if args.read:
-        pm3 = PM3(port=args.read[0], address=int(args.read[1]))
-        print(pm3.readParam(int(args.read[2])))
+        watlow = Watlow(port=args.read[0], address=int(args.read[1]))
+        print(watlow.readParam(int(args.read[2])))
     elif args.set:
-        pm3 = PM3(port=args.set[0], address=int(args.set[1]))
-        print(pm3.setTemp(int(args.set[2])))
+        watlow = Watlow(port=args.set[0], address=int(args.set[1]))
+        print(watlow.setTemp(int(args.set[2])))
     return 0
