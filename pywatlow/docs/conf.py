@@ -1,7 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-import os
+import os, sys
+import unittest.mock as mock
+
+MOCK_MODULES = ['crcmod', 'serial']
+for mod_name in MOCK_MODULES:
+    sys.modules[mod_name] = mock.Mock()
+
+sys.path.insert(0, os.path.abspath('../src/pywatlow'))
 
 extensions = [
     'sphinx.ext.autodoc',

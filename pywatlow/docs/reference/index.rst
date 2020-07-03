@@ -4,4 +4,5 @@ Reference
 .. toctree::
     :glob:
 
-    pywatlow*
+    pywatlow
+    watlow

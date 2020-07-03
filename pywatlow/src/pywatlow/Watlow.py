@@ -8,7 +8,7 @@ import serial as ser
 
 class Watlow():
     '''
-    Object representing a Watlow PID temperature controller
+    Object representing a Watlow PID temperature controller.
     '''
     def __init__(self, serial=None, port=None, timeout=0.5, address=1):
         self.timeout = timeout
@@ -38,7 +38,7 @@ class Watlow():
         '''
         Takes the full header byte array bytes[0] through bytes[6] of the full
         command and returns a check byte (bytearray of length one) using Watlow's
-        algorithm
+        algorithm.
 
         Implementation relies on this post:
         https://reverseengineering.stackexchange.com/questions/8303/rs-485-checksum-reverse-engineering-watlow-ez-zone-pm
@@ -87,7 +87,7 @@ class Watlow():
     def _dataCheckByte(self, dataBytes):
         '''
         Takes the full data byte array, bytes[8] through bytes[13] of the full
-        command and calculates the data check byte using BacNET CRC-16
+        command and calculates the data check byte using BacNET CRC-16.
         '''
         # CRC-16 with 0xFFFF as initial value, 0x1021 as polynomial, bit reversed
         crc_fun = crcmod.mkCrcFun(poly=0x11021, initCrc=0, rev=True, xorOut=0xFFFF)
@@ -99,7 +99,7 @@ class Watlow():
         '''
         Takes the watlow parameter ID, converts to bytes objects, calls
         internal functions to calc check bytes, and assembles/returns the request
-        byte array
+        byte array.
         '''
         # Request Header:
         BACnetPreamble = '55ff'
@@ -137,11 +137,11 @@ class Watlow():
         '''
         Takes the set point temperature value, converts to bytes objects, calls
         internal functions to calc check bytes, and assembles/returns the request
-        byte array
+        byte array.
 
         Much of this function is hard coded until I figure out how each
         part of the hex command is assembled. It is different than a normal read
-        command
+        command.
         '''
         # Request Header:
         BACnetPreamble = '55ff'
@@ -173,7 +173,7 @@ class Watlow():
 
     def _validateResponse(self, bytesResponse):
         '''
-        Compares check bytes received in response to those calculated
+        Compares check bytes received in response to those calculated.
         '''
         isValid = False
         # Evaluate headerChk as bytearray instead of as an int (which is how
@@ -190,7 +190,7 @@ class Watlow():
     def _parseResponse(self, bytesResponse):
         '''
         Takes the full response byte array and extracts the relevant data (e.g.
-        current temperature), constructs response dict, and returns it
+        current temperature), constructs response dict, and returns it.
         '''
         print(bytesResponse, len(bytesResponse))
         try:
@@ -220,13 +220,13 @@ class Watlow():
     def readParam(self, param):
         '''
         Takes a parameter and writes data to the watlow controller at
-        object's internal address
+        object's internal address.
 
         Data parameters are split like so: 4001 --> '04' and '001' --> '0401' in hex
 
         Zone corresponds to the address parameter in setup (e.g. '10' = 1, '11' = 2, etc.)
 
-        Returns a dict containing the response data and address
+        Returns a dict containing the response data and address.
         '''
         request = self._buildReadRequest(param)
         print('read request add. ' + str(self.address) + ': ', hexlify(request), len(request))
@@ -242,7 +242,7 @@ class Watlow():
 
     def setTemp(self, value):
         '''
-        Changes the watlow temperature setpoint
+        Changes the watlow temperature setpoint.
 
         Takes a value (in degrees C), builds request, writes to watlow,
         receives and returns response object

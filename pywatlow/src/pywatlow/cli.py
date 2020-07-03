@@ -16,7 +16,7 @@ Why does this file exist, and why not put this in __main__?
 """
 import argparse
 
-from pywatlow.Watlow import Watlow
+from pywatlow.watlow import Watlow
 
 parser = argparse.ArgumentParser(description='A Python driver for Watlow temperature controllers')
 group = parser.add_mutually_exclusive_group()
