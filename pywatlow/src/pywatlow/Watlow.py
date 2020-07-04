@@ -219,7 +219,7 @@ class Watlow():
             data = struct.unpack('>f', unhexlify(ieee_754))[0]
             output = {
                         'address': self.address,
-                        'data': self._f_to_c(data),
+                        'data': data,
                         'error': None
                      }
 
