@@ -59,7 +59,7 @@ Overview
 
 .. end-badges
 
-A Python driver for the Watlow EZ-Zone PM3 temperature controller standard bus protocol
+A Python driver for the Watlow EZ-Zone PM temperature controller standard bus protocol
 
 * Free software: GNU Lesser General Public License v3 (LGPLv3)
 

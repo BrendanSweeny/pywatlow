@@ -41,13 +41,45 @@ To use pywatlow in a project::
 
 	from pywatlow.watlow import Watlow
 	watlow = Watlow(port='COM5', address=1)
-	watlow.open()
 	print(watlow.readParam(4001))
 	print(watlow.readParam(7001))
 	print(watlow.setTemp(55))
 
-Returns::
+	##### Returns #####
+	{'address': 1, 'data': 50.5, 'error': None}
+	{'address': 1, 'data': 50.0, 'error': None}
+	{'address': 1, 'data': 55.0, 'error': None}
 
-	>>> {'address': 1, 'data': 50.5, 'error': None}
-	>>> {'address': 1, 'data': 50.0, 'error': None}
-	>>> {'address': 1, 'data': 55.0, 'error': None}
+Using multiple temperature controllers on a single USB to RS485 converter::
+
+	from pywatlow.watlow import Watlow
+	import serial
+
+	ser = serial.Serial()
+	ser.port = 'COM5'
+	ser.baudrate = 38400  # Default baudrate for Watlow controllers
+	ser.timeout = 0.5
+	ser.open()
+
+	watlow_one = Watlow(serial=ser, address=1)
+	watlow_two = Watlow(serial=ser, address=2)
+	print(watlow_one.readParam(4001))
+	print(watlow_two.readParam(4001))
+
+	##### Returns #####
+	{'address': 1, 'data': 50.5, 'error': None}
+	{'address': 2, 'data': 60.0, 'error': None}
+
+
+Error Handling
+==============
+
+Errors are passed through using the 'error' key of the returned dictionary.
+Here there is no temperature controller at address 2::
+
+	print(watlow_one.readParam(4001))
+	print(watlow_two.readParam(4001))
+
+	##### Returns #####
+	{'address': 1, 'data': 55.0, 'error': None}
+	{'address': 2, 'data': None, 'error': Exception('Exception: No response at address 2')}

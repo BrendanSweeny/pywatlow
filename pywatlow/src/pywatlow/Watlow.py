@@ -201,7 +201,6 @@ class Watlow():
         Takes the full response byte array and extracts the relevant data (e.g.
         current temperature), constructs response dict, and returns it.
         '''
-        print(bytesResponse, len(bytesResponse))
         try:
             if bytesResponse == b'' or bytesResponse == bytearray(len(bytesResponse)):
                 raise Exception('Exception: No response at address {0}'.format(self.address))
@@ -236,14 +235,12 @@ class Watlow():
         Returns a dict containing the response data and address.
         '''
         request = self._buildReadRequest(param)
-        print('read request add. ' + str(self.address) + ': ', hexlify(request), len(request))
         try:
             self.serial.write(request)
         except Exception as e:
             print('Exception: ', e)
         else:
             response = self.serial.read(21)
-            print('read response add ' + str(self.address) + ': ', hexlify(response), len(response))
             output = self._parseResponse(response)
             return output
 
@@ -258,7 +255,6 @@ class Watlow():
         '''
         value = self._c_to_f(value)
         request = self._buildSetTempRequest(value)
-        print('set request add. ' + str(self.address) + ': ', hexlify(request), len(request))
 
         try:
             self.serial.write(request)
@@ -266,7 +262,5 @@ class Watlow():
             print('Exception: ', e)
         else:
             bytesResponse = self.serial.read(20)
-            print('set response add ' + str(self.address) + ': ', hexlify(bytesResponse), len(bytesResponse))
             output = self._parseResponse(bytesResponse)
-            print('output: ', output)
             return output

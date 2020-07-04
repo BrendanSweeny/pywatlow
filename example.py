@@ -1,19 +1,13 @@
-from pywatlow import PM3
+from pywatlow.watlow import Watlow
+import serial
 
-watlow = PM3(port='COM3')
+ser = serial.Serial()
+ser.port = 'COM5'
+ser.baudrate = 38400
+ser.timeout = 0.5
+ser.open()
 
-watlow.readParam('4001')
-watlow.readParam('7001')
-watlow.setTemp(100)
-
-#second_watlow = PM3(watlow.serial, address=2)
-second_watlow = PM3(address=2)
-second_watlow.serial = watlow.serial
-
-second_watlow.readParam('4001')
-second_watlow.readParam('7001')
-second_watlow.setTemp(100)
-
-print(second_watlow.serial.port)
-
-watlow.close()
+watlow_one = Watlow(serial=ser, address=1)
+watlow_two = Watlow(serial=ser, address=2)
+print(watlow_one.readParam(7001))
+print(watlow_two.readParam(4001))
