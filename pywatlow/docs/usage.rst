@@ -17,12 +17,20 @@ This is equivalent to calling `Watlow(port='COM5',address=1).readParam(4001)`::
 	>>> pywatlow -r COM5 1 4001
 	{'address': 1, 'data': 50.5, 'error': None}
 
-Read the setpoint temperature in degress Celsius.
+Read the setpoint temperature in degrees Celsius.
 This is equivalent to calling `Watlow(port='COM5',address=1).readParam(7001)`::
 
 	# Read the setpoint (parameter 7001) of the Watlow controller
 	# at address 1 on serial port COM5:
 	>>> pywatlow -r COM5 1 7001
+	{'address': 1, 'data': 60.0, 'error': None}
+
+Change the setpoint temperature (degrees Celsius).
+This is equivalent to calling `Watlow(port='COM5',address=1).setTemp(50)`::
+
+	# Change the setpoint of the Watlow controller
+	# at address 1 on serial port COM5:
+	>>> pywatlow -s COM5 1 50
 	{'address': 1, 'data': 50.0, 'error': None}
 
 
@@ -32,8 +40,7 @@ Module Usage
 To use pywatlow in a project::
 
 	from pywatlow.watlow import Watlow
-	watlow = Watlow()
-	watlow.port = 'COM5'
+	watlow = Watlow(port='COM5', address=1)
 	watlow.open()
 	print(watlow.readParam(4001))
 	print(watlow.readParam(7001))

@@ -9,6 +9,14 @@ import serial as ser
 class Watlow():
     '''
     Object representing a Watlow PID temperature controller.
+
+    * **serial**: serial object (see pySerial's serial.Serial class) or `None`
+    * **port** (str): string representing the serial port or `None`
+    * **timeout** (float): Read timeout value in seconds
+    * **address** (int): Watlow controller address (found in the setup menu). Acceptable values are 1 through 16.
+
+    `timeout` and `port` are not necessary if a serial object was already passed
+    with those arguments.
     '''
     def __init__(self, serial=None, port=None, timeout=0.5, address=1):
         self.timeout = timeout
@@ -104,6 +112,7 @@ class Watlow():
         # Request Header:
         BACnetPreamble = '55ff'
         requestParam = '05'
+        # Zone corresponds to the address parameter in setup (e.g. '10' = 1, '11' = 2, etc.)
         zone = str(9 + self.address)
         additionalHeader = '000006'
         hexHeader = BACnetPreamble + requestParam + zone + additionalHeader
@@ -222,9 +231,7 @@ class Watlow():
         Takes a parameter and writes data to the watlow controller at
         object's internal address.
 
-        Data parameters are split like so: 4001 --> '04' and '001' --> '0401' in hex
-
-        Zone corresponds to the address parameter in setup (e.g. '10' = 1, '11' = 2, etc.)
+        * **param**: a four digit integer corresponding to a Watlow parameter (e.g. 4001, 7001)
 
         Returns a dict containing the response data and address.
         '''
@@ -242,10 +249,12 @@ class Watlow():
 
     def setTemp(self, value):
         '''
-        Changes the watlow temperature setpoint.
+        Changes the watlow temperature setpoint. Takes a value (in degrees C), builds request, writes to watlow,
+        receives and returns response object.
 
-        Takes a value (in degrees C), builds request, writes to watlow,
-        receives and returns response object
+        * **value**: an int or float representing the new target setpoint in degrees C
+
+        Returns a dict containing the response data and address.
         '''
         value = self._c_to_f(value)
         request = self._buildSetTempRequest(value)
