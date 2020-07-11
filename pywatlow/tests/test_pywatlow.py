@@ -4,7 +4,7 @@ from binascii import unhexlify
 import pytest
 
 from pywatlow.cli import main
-from pywatlow.Watlow import Watlow
+from pywatlow.watlow import Watlow
 
 
 def test_main():
