@@ -71,6 +71,13 @@ Using multiple temperature controllers on a single USB to RS485 converter::
 	{'address': 2, 'data': 60.0, 'error': None}
 
 
+Reading Other Parameters
+========================
+
+Currently, only parameters for the current temperature (4001) and the setpoint (7001)
+have been tested.
+
+
 Error Handling
 ==============
 

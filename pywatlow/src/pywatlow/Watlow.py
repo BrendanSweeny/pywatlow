@@ -214,16 +214,25 @@ class Watlow():
                         'error': e
                      }
         else:
-
-            ieee_754 = hexlify(bytesResponse[-6:-2])
-            data = struct.unpack('>f', unhexlify(ieee_754))[0]
+            # Case where data value is an int used to represent a state defined
+            # in the manual (e.g. param 8003, heat algorithm, where 62 means 'PID')
+            if bytesResponse[6] == 10:
+                #print(hexlify(bytesResponse))
+                data = bytesResponse[-4:-2]
+                #print(hexlify(bytesResponse), hexlify(data))
+                data = int.from_bytes(data, byteorder='big')
+            # Case where data value is a float representing a process value
+            # (e.g. 4001, where current temp of 50.0 is returned)
+            elif bytesResponse[6] == 11:
+                ieee_754 = bytesResponse[-6:-2]
+                data = struct.unpack('>f', ieee_754)[0]
             output = {
                         'address': self.address,
                         'data': data,
                         'error': None
                      }
 
-        return output
+            return output
 
     def readParam(self, param):
         '''
@@ -246,10 +255,10 @@ class Watlow():
 
     def setTemp(self, value):
         '''
-        Changes the watlow temperature setpoint. Takes a value (in degrees C), builds request, writes to watlow,
+        Changes the watlow temperature setpoint. Takes a value (in degrees F by default), builds request, writes to watlow,
         receives and returns response object.
 
-        * **value**: an int or float representing the new target setpoint in degrees C
+        * **value**: an int or float representing the new target setpoint in degrees F by default
 
         Returns a dict containing the response data and address.
         '''
