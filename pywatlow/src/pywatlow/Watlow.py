@@ -225,6 +225,7 @@ class Watlow():
         else:
             # Case where data value is an int used to represent a state defined
             # in the manual (e.g. param 8003, heat algorithm, where 62 means 'PID')
+            # Hex byte 6: '0a'
             if bytesResponse[6] == 10:
                 #print(hexlify(bytesResponse))
                 data = bytesResponse[-4:-2]
@@ -232,6 +233,7 @@ class Watlow():
                 data = int.from_bytes(data, byteorder='big')
             # Case where data value is a float representing a process value
             # (e.g. 4001, where current temp of 50.0 is returned)
+            # Hex byte 6: '0b'
             elif bytesResponse[6] == 11:
                 ieee_754 = bytesResponse[-6:-2]
                 data = struct.unpack('>f', ieee_754)[0]
