@@ -111,7 +111,7 @@ class TestWatlow:
             readRequest = Watlow(serial=None, address=test[1])._buildReadRequest(dataParam=test[0])
             assert readRequest == unhexlify(test[2]), "param: {0}, addr: {1}, request: {2}".format(*test)
 
-    def test_buildSetTempRequest(self):
+    def test_buildSetRequest(self):
         '''
         Tests that set temperature requests are built properly based on the
         input dataParam
@@ -127,7 +127,7 @@ class TestWatlow:
         ]
 
         for test in test_data:
-            setTempRequest = Watlow(serial=None, address=test[1])._buildSetTempRequest(value=test[0])
+            setTempRequest = Watlow(serial=None, address=test[1])._buildSetRequest(dataParam=7001, value=test[0])
             assert setTempRequest == unhexlify(test[2]), "param: {0}, addr: {1}, request: {2}".format(*test)
 
     def test_c_to_f(self):

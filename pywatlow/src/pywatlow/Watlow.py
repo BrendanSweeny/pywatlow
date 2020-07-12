@@ -103,6 +103,13 @@ class Watlow():
         byte_str = struct.pack('<H', crc_fun(dataBytes))
         return byte_str
 
+    def formatDataParam(self, dataParam):
+        # Reformats data param from notation in the manual to hex
+        # (e.g. '4001' to '04' and '001' to '0401')
+        dataParam = format(int(dataParam), '05d')
+        dataParam = hexlify(int(dataParam[:2]).to_bytes(1, 'big') + int(dataParam[2:]).to_bytes(1, 'big')).decode('utf-8')
+        return dataParam
+
     def _buildReadRequest(self, dataParam):
         '''
         Takes the watlow parameter ID, converts to bytes objects, calls
@@ -119,10 +126,7 @@ class Watlow():
 
         # Request Data Parameters
         additionalData = '010301'
-        # Reformats data param from notation in the manual to hex
-        # (e.g. '4001' to '04' and '001' to '0401')
-        dataParam = format(int(dataParam), '05d')
-        dataParam = hexlify(int(dataParam[:2]).to_bytes(1, 'big') + int(dataParam[2:]).to_bytes(1, 'big')).decode('utf-8')
+        dataParam = self.formatDataParam(dataParam)
         instance = '01'
         hexData = additionalData + dataParam + instance
 
@@ -142,7 +146,7 @@ class Watlow():
 
         return request
 
-    def _buildSetTempRequest(self, value):
+    def _buildSetRequest(self, dataParam, value):
         '''
         Takes the set point temperature value, converts to bytes objects, calls
         internal functions to calc check bytes, and assembles/returns the request
@@ -158,6 +162,11 @@ class Watlow():
         zone = str(9 + self.address)
         additionalHeader = '00000a'
         hexHeader = BACnetPreamble + requestParam + zone + additionalHeader
+
+        # Reformats data param from notation in the manual to hex
+        # (e.g. '7001' to '07' and '001' to '0701')
+        dataParam = format(int(dataParam), '05d')
+        dataParam = hexlify(int(dataParam[:2]).to_bytes(1, 'big') + int(dataParam[2:]).to_bytes(1, 'big')).decode('utf-8')
 
         # Data portion of request (here the set point value is appended)
         hexData = '010407010108'
@@ -263,7 +272,7 @@ class Watlow():
         Returns a dict containing the response data and address.
         '''
         value = self._c_to_f(value)
-        request = self._buildSetTempRequest(value)
+        request = self._buildSetRequest(7001, value)
 
         try:
             self.serial.write(request)
@@ -273,3 +282,6 @@ class Watlow():
             bytesResponse = self.serial.read(20)
             output = self._parseResponse(bytesResponse)
             return output
+
+    def setParam(self, param):
+        return param
