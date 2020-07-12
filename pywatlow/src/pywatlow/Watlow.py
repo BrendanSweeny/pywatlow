@@ -103,7 +103,7 @@ class Watlow():
         byte_str = struct.pack('<H', crc_fun(dataBytes))
         return byte_str
 
-    def formatDataParam(self, dataParam):
+    def _formatDataParam(self, dataParam):
         # Reformats data param from notation in the manual to hex
         # (e.g. '4001' to '04' and '001' to '0401')
         dataParam = format(int(dataParam), '05d')
@@ -126,7 +126,7 @@ class Watlow():
 
         # Request Data Parameters
         additionalData = '010301'
-        dataParam = self.formatDataParam(dataParam)
+        dataParam = self._formatDataParam(dataParam)
         instance = '01'
         hexData = additionalData + dataParam + instance
 
@@ -163,13 +163,9 @@ class Watlow():
         additionalHeader = '00000a'
         hexHeader = BACnetPreamble + requestParam + zone + additionalHeader
 
-        # Reformats data param from notation in the manual to hex
-        # (e.g. '7001' to '07' and '001' to '0701')
-        dataParam = format(int(dataParam), '05d')
-        dataParam = hexlify(int(dataParam[:2]).to_bytes(1, 'big') + int(dataParam[2:]).to_bytes(1, 'big')).decode('utf-8')
-
         # Data portion of request (here the set point value is appended)
-        hexData = '010407010108'
+        dataParam = self._formatDataParam(dataParam)
+        hexData = '0104' + dataParam + '0108'
 
         value = struct.pack('>f', value)
 

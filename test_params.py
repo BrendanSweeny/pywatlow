@@ -37,7 +37,8 @@ param_default_dict = {
 
 
 for param in param_default_dict:
-    print(param, watlow.readParam(param)['data'])
+    #print(param, watlow.readParam(param)['data'])
+    print(param, watlow._formatDataParam(param))
 
 #print(struct.unpack('>f', unhexlify(b'0f01003e'))[0])
 #print(watlow.readParam(7001))

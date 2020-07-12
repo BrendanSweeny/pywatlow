@@ -111,24 +111,45 @@ class TestWatlow:
             readRequest = Watlow(serial=None, address=test[1])._buildReadRequest(dataParam=test[0])
             assert readRequest == unhexlify(test[2]), "param: {0}, addr: {1}, request: {2}".format(*test)
 
-    def test_buildSetRequest(self):
+    def test_formatDataParam(self):
         '''
-        Tests that set temperature requests are built properly based on the
-        input dataParam
-
-        _buildSetTempRequest is also dependent on _headerCheckByte and _dataCheckByte
+        Tests that the integer representing the data parameters are formatted
+        to hexidecimal properly for the assembled messages.
         '''
         test_data = [
-            # Test of form (temperature, address, request)
-            (81, 1, '55ff051000000aec01040701010842a20000c4b8'),
-            (80, 1, '55ff051000000aec01040701010842a000007c0d'),
-            (78, 1, '55ff051000000aec010407010108429c0000712e'),
-            (78.5, 1, '55ff051000000aec010407010108429d0000ad74')
+            # Test of form: dataParam, two byte hex representation
+            (4005, '0405'),
+            (4007, '0407'),
+            (4001, '0401'),
+            (7001, '0701'),
+            (8003, '0803'),
+            (26029, '1a1d'),
+            (26026, '1a1a'),
+            (26030, '1a1e')
         ]
 
         for test in test_data:
-            setTempRequest = Watlow(serial=None, address=test[1])._buildSetRequest(dataParam=7001, value=test[0])
-            assert setTempRequest == unhexlify(test[2]), "param: {0}, addr: {1}, request: {2}".format(*test)
+            generatedDataParam = Watlow()._formatDataParam(test[0])
+            assert generatedDataParam == test[1]
+
+    def test_buildSetRequest(self):
+        '''
+        Tests that set requests are built properly based on the input dataParam
+
+        _buildSetRequest is also dependent on _headerCheckByte, _dataCheckByte
+        and _formatDataParam
+        '''
+        test_data = [
+            # Test of form: dataParam, temperature, address, request
+            (7001, 81, 1, '55ff051000000aec01040701010842a20000c4b8'),
+            (7001, 80, 1, '55ff051000000aec01040701010842a000007c0d'),
+            (7001, 78, 1, '55ff051000000aec010407010108429c0000712e'),
+            (7001, 78.5, 1, '55ff051000000aec010407010108429d0000ad74')
+        ]
+
+        for test in test_data:
+            setRequest = Watlow(serial=None, address=test[2])._buildSetRequest(dataParam=test[0], value=test[1])
+            assert setRequest == unhexlify(test[3]), "param: {0}, val: {1}, addr: {2}, request: {3}".format(*test)
 
     def test_c_to_f(self):
         '''
