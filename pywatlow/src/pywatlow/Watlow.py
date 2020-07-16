@@ -233,6 +233,7 @@ class Watlow():
             elif bytesResponse[6] == 11:
                 ieee_754 = bytesResponse[-6:-2]
                 data = struct.unpack('>f', ieee_754)[0]
+
             output = {
                         'address': self.address,
                         'data': data,
@@ -240,6 +241,36 @@ class Watlow():
                      }
 
             return output
+
+    def _parseSetResponse(self, bytesResponse):
+        '''
+        This is the old parse response function. Until I figure out what the
+        difference between set/read responses are, it will be used by responses
+        to set requests.
+        '''
+        try:
+            if bytesResponse == b'' or bytesResponse == bytearray(len(bytesResponse)):
+                raise Exception('Exception: No response at address {0}'.format(self.address))
+            if not self._validateResponse(bytesResponse):
+                print('Invalid Response at address {0}: '.format(self.address), hexlify(bytesResponse))
+                raise Exception('Exception: Invalid response received from address {0}'.format(self.address))
+        except Exception as e:
+            output = {
+                        'address': self.address,
+                        'data': None,
+                        'error': e
+                     }
+        else:
+
+            ieee_754 = hexlify(bytesResponse[-6:-2])
+            data = struct.unpack('>f', unhexlify(ieee_754))[0]
+            output = {
+                        'address': self.address,
+                        'data': data,
+                        'error': None
+                     }
+
+        return output
 
     def readParam(self, param):
         '''
@@ -278,8 +309,19 @@ class Watlow():
             print('Exception: ', e)
         else:
             bytesResponse = self.serial.read(20)
-            output = self._parseResponse(bytesResponse)
+            print(hexlify(bytesResponse))
+            output = self._parseSetResponse(bytesResponse)
             return output
 
-    def setParam(self, param):
-        return param
+    def setParam(self, param, value):
+        request = self._buildSetRequest(param, value)
+
+        try:
+            self.serial.write(request)
+        except Exception as e:
+            print('Exception: ', e)
+        else:
+            bytesResponse = self.serial.read(20)
+            print(bytesResponse)
+            output = self._parseSetResponse(bytesResponse)
+            return output

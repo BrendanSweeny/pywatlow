@@ -36,9 +36,15 @@ param_default_dict = {
 }
 
 
-for param in param_default_dict:
+#for param in param_default_dict:
     #print(param, watlow.readParam(param)['data'])
-    print(param, watlow._formatDataParam(param))
+    #print(param, watlow._formatDataParam(param))
+#print(hexlify(b'U\xff\x06\x00\x10\x00\x02\x8f\x02\x85R\xef'))
+#print(hexlify(b'U\xff\x06\x00\x10\x00\nv\x02\x04\x07\x01\x01\x08C\x16\x00\x0059'))
+#print(7001, watlow.readParam(7001))
+print(watlow.setTemp(200))
+#print(7001, watlow.setParam(7001, 150))
+#print(7001, watlow.readParam(7001))
 
 #print(struct.unpack('>f', unhexlify(b'0f01003e'))[0])
 #print(watlow.readParam(7001))
@@ -61,3 +67,12 @@ for param in param_default_dict:
 # 55 ff 06 00 10 00 0b - 88 02 - 03 01 - 04 01 - 01 08    - 45 1e 26 8c - 8b 9e, 4001, 451e268c, 2530.4091796875
 # 55 ff 06 00 10 00 0b - 88 02 - 03 01 - 1a 1e - 01 08    - 41 6b 33 33 - 1f 34, 26030, 416b3333, 14.699999809265137
 # 55 ff 06 00 10 00 0b - 88 02 - 03 01 - 1a 1a - 01 08    - 00 00 00 00 - 5c e2, 26026, 00000000, 0.0
+
+# Response to set temp request
+# 55 ff 06 00 10 00 0a - 76 - 02 04 - 07 01 - 01 08 - 43 16 00 00   - 35 39
+# 55 ff 06 00 10 00 0a - 76 - 02 04 - 07 01 - 01 08 - 43 54 00 00 - fb 8a, 7001, 43540000
+
+# 55 ff 06 00 10 00 02 - 8f 02 - 85                                     - 52 ef
+
+# Set Requests that work:
+# 55 FF 05 10 00 00 0A - EC 01 - 04    - 07 01 - 01 08    - 42 A0 00 00 - 7C 0D
