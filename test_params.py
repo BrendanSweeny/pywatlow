@@ -8,6 +8,7 @@ watlow = Watlow(port='COM5', address=1)
 param_default_dict = {
     4005: 'Thermocouple or Thermistor', # Sensor Type
     4007: 2, # RTD Leads
+    7001: '??', # Setpoint
     4042: 'Process', # Units
     4015: 0.0, # Scale Low
     4016: 20.0, # Scale High
@@ -36,13 +37,13 @@ param_default_dict = {
 }
 
 
-#for param in param_default_dict:
-    #print(param, watlow.readParam(param)['data'])
-    #print(param, watlow._formatDataParam(param))
+'''for param in param_default_dict:
+    print(param, watlow.readParam(param)['data'])
+    print(param, watlow._formatDataParam(param))'''
 #print(hexlify(b'U\xff\x06\x00\x10\x00\x02\x8f\x02\x85R\xef'))
 #print(hexlify(b'U\xff\x06\x00\x10\x00\nv\x02\x04\x07\x01\x01\x08C\x16\x00\x0059'))
 #print(7001, watlow.readParam(7001))
-print(watlow.setTemp(200))
+# print(watlow.setTemp(200))
 #print(7001, watlow.setParam(7001, 150))
 #print(7001, watlow.readParam(7001))
 
@@ -76,3 +77,40 @@ print(watlow.setTemp(200))
 
 # Set Requests that work:
 # 55 FF 05 10 00 00 0A - EC 01 - 04    - 07 01 - 01 08    - 42 A0 00 00 - 7C 0D
+
+# Possible Int set request:
+# 55 FF 05 10 00 00 0A EC 01 04 08 03 01 0F 01 00 47 8F ED
+#print(hexlify(watlow._dataCheckByte(unhexlify('01040803010F010047'))))
+print(watlow.writeBytes(8003))
+'''for i in range(0, 16):
+    print('01' + hexlify(bytes([i])).decode('utf-8'))
+    print(watlow.writeBytes(8003, hexlify(bytes([i])).decode('utf-8')))'''
+#print(hexlify((71).to_bytes(2, 'big')))
+#print(watlow.writeBytes(7001))
+
+# Requests so far that garnered a response:
+# 55 ff 05 10 00 00 0a ec 01 04 08 03 01 08 00 00 00 47 d8 9d **** 55 FF 06 00 10 00 02 8F 02 85 52 EF
+# 55 ff 05 10 00 00 0a ec 01 04 08 03 01 01 00 00 00 47 bc cc **** 55 FF 06 00 10 00 02 8F 02 85 52 EF
+# 55 ff 05 10 00 00 0a ec 01 04 08 03 01 08 01 00 00 47 63 81 **** 55 FF 06 00 10 00 02 8F 02 85 52 EF
+# 55 ff 05 10 00 00 0a ec 01 04 08 03 01 0f 00 00 00 47 d8 9d **** 55 FF 06 00 10 00 02 8F 02 86 C9 DD
+# 55 ff 05 10 00 00 0a ec 01 04 08 03 01 0f 01 00 00 47 bf b1 **** 55 FF 06 00 10 00 02 8F 02 86 C9 DD
+# 55 ff 05 10 00 00 0a ec 01 03 08 03 01 08 01 00 00 47 81 68 **** 55 FF 06 00 10 00 02 8F 02 83 64 8A
+# 55 ff 05 10 00 00 0a ec 01 03 08 03 01 08 00 00 00 47 3a 74 **** 55 FF 06 00 10 00 02 8F 02 83 64 8A
+# 55 ff 05 10 00 00 0a ec 01 03 08 03 01 0f 00 00 00 47 e6 44 **** 55 FF 06 00 10 00 02 8F 02 83 64 8A
+# 55 ff 05 10 00 00 0a ec 01 03 08 03 01 0f 01 00 00 47 5d 58 **** 55 FF 06 00 10 00 02 8F 02 83 64 8A
+# 55 ff 05 10 00 00 0a ec 01 03 08 03 01 08 01 00 00 47 81 68 **** 55 FF 06 00 10 00 02 8F 02 83 64 8A
+# 55 ff 05 10 00 00 0a ec 01 05 08 03 01 08 01 00 00 47 9e cc **** 55 FF 06 00 10 00 05 73 02 05 08 03 00 02 5B
+# 55 ff 05 10 00 00 0a ec 01 05 08 03 01 08 00 00 00 47 25 d0 **** 55 FF 06 00 10 00 05 73 02 05 08 03 00 02 5B
+# 55 ff 05 10 00 00 0a ec 01 05 08 03 01 0f 01 00 00 47 42 fc **** 55 FF 06 00 10 00 05 73 02 05 08 03 00 02 5B
+# 55 ff 05 10 00 00 0a ec 01 05 01 08 03 01 0f 01 00 47 b3 bb **** 55 FF 06 00 10 00 05 73 02 05 01 08 00 B4 23
+# 55 ff 05 10 00 00 0a ec 01 04 01 08 03 01 0f 01 00 47 4e f6 **** 55 FF 06 00 10 00 02 8F 02 80 FF B8
+
+# ***For data param 8003, this is the winner:***
+# 55 ff 05 10 03 00 09 46 01 04 08 03 01 0f 01 00 47 8f ed ****    55 FF 06 03 10 00 09 EF 02 04 08 03 01 0F 01 00 47 88 3B
+
+# ***For 34005, this works:***
+# 55 ff 05 10 03 00 09 46 01 04 22 05 01 0f 01 00 3e e7 91 ****    55 FF 06 03 10 00 09 EF 02 04 22 05 01 0F 01 00 3E E0 47
+
+# 55 ff 05 10 00 00 0a ec 01 04 08 03 01 0f 01 00 47 8f ed **** no response
+# 55 ff 05 10 00 00 06 e8 01 03 08 03 01 08 01 00 00 47 81 68 **** no response
+# 55 ff 05 10 00 00 06 e8 01 04 01 08 03 01 0f 01 00 47 4e f6 **** no response

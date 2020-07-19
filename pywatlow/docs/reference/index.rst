@@ -6,3 +6,4 @@ Reference
 
     pywatlow
     watlow
+    messaging

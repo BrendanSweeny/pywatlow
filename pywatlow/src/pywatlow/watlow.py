@@ -172,6 +172,7 @@ class Watlow():
         # Convert input strings to bytes:
         hexHeader = unhexlify(hexHeader)
         hexData = unhexlify(hexData) + value
+        print(hexlify(value))
 
         # Calculate check bytes:
         headerChk = self._headerCheckByte(hexHeader)
@@ -225,6 +226,7 @@ class Watlow():
             if bytesResponse[6] == 10:
                 #print(hexlify(bytesResponse))
                 data = bytesResponse[-4:-2]
+                print('data:', str(hexlify(data)).upper())
                 #print(hexlify(bytesResponse), hexlify(data))
                 data = int.from_bytes(data, byteorder='big')
             # Case where data value is a float representing a process value
@@ -232,6 +234,7 @@ class Watlow():
             # Hex byte 6: '0b'
             elif bytesResponse[6] == 11:
                 ieee_754 = bytesResponse[-6:-2]
+                print('ieee_754:', str(hexlify(ieee_754)).upper())
                 data = struct.unpack('>f', ieee_754)[0]
 
             output = {
@@ -264,6 +267,7 @@ class Watlow():
 
             ieee_754 = hexlify(bytesResponse[-6:-2])
             data = struct.unpack('>f', unhexlify(ieee_754))[0]
+            print('ieee_754:', str(hexlify(ieee_754)).upper(), data)
             output = {
                         'address': self.address,
                         'data': data,
@@ -282,12 +286,14 @@ class Watlow():
         Returns a dict containing the response data and address.
         '''
         request = self._buildReadRequest(param)
+        print(param, str(hexlify(request)).upper())
         try:
             self.serial.write(request)
         except Exception as e:
             print('Exception: ', e)
         else:
             response = self.serial.read(21)
+            print(param, 'reponse:', str(hexlify(response)).upper())
             output = self._parseResponse(response)
             return output
 
@@ -302,6 +308,7 @@ class Watlow():
         '''
         value = self._c_to_f(value)
         request = self._buildSetRequest(7001, value)
+        print(7001, str(hexlify(request)).upper())
 
         try:
             self.serial.write(request)
@@ -309,12 +316,55 @@ class Watlow():
             print('Exception: ', e)
         else:
             bytesResponse = self.serial.read(20)
-            print(hexlify(bytesResponse))
+            print(7001, 'reponse:', str(hexlify(bytesResponse)).upper())
             output = self._parseSetResponse(bytesResponse)
             return output
 
     def setParam(self, param, value):
         request = self._buildSetRequest(param, value)
+        print(param, str(hexlify(request)).upper())
+        try:
+            self.serial.write(request)
+        except Exception as e:
+            print('Exception: ', e)
+        else:
+            bytesResponse = self.serial.read(20)
+            print(param, 'reponse:', str(hexlify(bytesResponse)).upper())
+            output = self._parseSetResponse(bytesResponse)
+            return output
+
+    def writeBytes(self, dataParam):
+        # Request Header:
+        BACnetPreamble = '55ff'
+        requestParam = '05'
+        zone = str(9 + self.address)
+        additionalHeader = '030009'
+        hexHeader = BACnetPreamble + requestParam + zone + additionalHeader
+
+        # Data portion of request (here the set point value is appended)
+        dataParam = self._formatDataParam(dataParam)
+        hexData = '0104' + dataParam + '010f01'
+
+        #value = struct.pack('>I', 71)
+        value = (71).to_bytes(2, 'big')
+        print(value)
+
+        # Convert input strings to bytes:
+        hexHeader = unhexlify(hexHeader)
+        hexData = unhexlify(hexData) + value
+        print(hexData)
+
+        # Calculate check bytes:
+        headerChk = self._headerCheckByte(hexHeader)
+        dataChk = self._dataCheckByte(hexData)
+
+        # Assemble request byte array:
+        request = bytearray(hexHeader)
+        request += bytearray(headerChk)
+        request += bytearray(hexData)
+        request += dataChk
+
+        print(hexlify(request), len(hexlify(request)))
 
         try:
             self.serial.write(request)
@@ -322,6 +372,6 @@ class Watlow():
             print('Exception: ', e)
         else:
             bytesResponse = self.serial.read(20)
-            print(bytesResponse)
-            output = self._parseSetResponse(bytesResponse)
-            return output
+            print('reponse:', str(hexlify(bytesResponse, )).upper())
+            #output = self._parseResponse(bytesResponse)
+            #return output
