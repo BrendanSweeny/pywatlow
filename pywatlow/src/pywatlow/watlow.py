@@ -110,6 +110,9 @@ class Watlow():
         dataParam = hexlify(int(dataParam[:2]).to_bytes(1, 'big') + int(dataParam[2:]).to_bytes(1, 'big')).decode('utf-8')
         return dataParam
 
+    def hexParamToString(self, hexParam):
+        return hexParam
+
     def _buildReadRequest(self, dataParam):
         '''
         Takes the watlow parameter ID, converts to bytes objects, calls
@@ -146,7 +149,7 @@ class Watlow():
 
         return request
 
-    def _buildSetRequest(self, dataParam, value):
+    def _buildSetRequest(self, dataParam, value, val_type):
         '''
         Takes the set point temperature value, converts to bytes objects, calls
         internal functions to calc check bytes, and assembles/returns the request
@@ -156,23 +159,26 @@ class Watlow():
         part of the hex command is assembled. It is different than a normal read
         command.
         '''
-        # Request Header:
         BACnetPreamble = '55ff'
         requestParam = '05'
         zone = str(9 + self.address)
-        additionalHeader = '00000a'
-        hexHeader = BACnetPreamble + requestParam + zone + additionalHeader
-
-        # Data portion of request (here the set point value is appended)
         dataParam = self._formatDataParam(dataParam)
-        hexData = '0104' + dataParam + '0108'
+        if val_type == float:
+            additionalHeader = '00000a'
+            hexData = '0104' + dataParam + '0108'
+            value = struct.pack('>f', float(value))
+        elif val_type == int:
+            additionalHeader = '030009'
+            hexData = '0104' + dataParam + '010f01'
+            value = (71).to_bytes(2, 'big')
 
-        value = struct.pack('>f', value)
-
+        # Request Header String:
+        hexHeader = BACnetPreamble + requestParam + zone + additionalHeader
         # Convert input strings to bytes:
         hexHeader = unhexlify(hexHeader)
+
+        # Data portion of request (here the set point value is appended)
         hexData = unhexlify(hexData) + value
-        print(hexlify(value))
 
         # Calculate check bytes:
         headerChk = self._headerCheckByte(hexHeader)
@@ -220,25 +226,47 @@ class Watlow():
                         'error': e
                      }
         else:
-            # Case where data value is an int used to represent a state defined
+            # Case where response data value is an int used to represent a state defined
             # in the manual (e.g. param 8003, heat algorithm, where 62 means 'PID')
-            # Hex byte 6: '0a'
-            if bytesResponse[6] == 10:
+            # from a read request
+            # Hex byte 7: '0a', Hex bytes 15, 16: 0F, 01
+            if bytesResponse[6] == 10 and bytesResponse[-6] == 15 and bytesResponse[-5] == 1:
+                #print(hexlify(bytesResponse))
+                data = bytesResponse[-4:-2]
+                param = bytesResponse[11:13]
+                print('data:', str(hexlify(data)).upper())
+                #print(hexlify(bytesResponse), hexlify(data))
+                data = int.from_bytes(data, byteorder='big')
+            # Case where response data value is a float from a set param request
+            # (e.g. 7001, process value setpoint)
+            # Hex byte 7: '0a', Hex byte 14: '08'
+            elif bytesResponse[6] == 10 and bytesResponse[-7] == 8:
+                ieee_754 = hexlify(bytesResponse[-6:-2])
+                print('ieee_754:', str(hexlify(ieee_754)).upper())
+                data = struct.unpack('>f', unhexlify(ieee_754))[0]
+                param = bytesResponse[10:12]
+            # Case where response data value is an integer from a set param
+            # request (e.g. param 8003, heat algorithm, where 62 means 'PID')
+            # Hex byte 7: '09'
+            elif  bytesResponse[6] == 9:
                 #print(hexlify(bytesResponse))
                 data = bytesResponse[-4:-2]
                 print('data:', str(hexlify(data)).upper())
                 #print(hexlify(bytesResponse), hexlify(data))
                 data = int.from_bytes(data, byteorder='big')
+                param = bytesResponse[10:12]
             # Case where data value is a float representing a process value
             # (e.g. 4001, where current temp of 50.0 is returned)
-            # Hex byte 6: '0b'
+            # Hex byte 7: '0b'
             elif bytesResponse[6] == 11:
                 ieee_754 = bytesResponse[-6:-2]
                 print('ieee_754:', str(hexlify(ieee_754)).upper())
                 data = struct.unpack('>f', ieee_754)[0]
+                param = bytesResponse[11:13]
 
             output = {
                         'address': self.address,
+                        'param': param,
                         'data': data,
                         'error': None
                      }
@@ -317,11 +345,29 @@ class Watlow():
         else:
             bytesResponse = self.serial.read(20)
             print(7001, 'reponse:', str(hexlify(bytesResponse)).upper())
-            output = self._parseSetResponse(bytesResponse)
+            output = self._parseResponse(bytesResponse)
             return output
 
-    def setParam(self, param, value):
-        request = self._buildSetRequest(param, value)
+    def setParam(self, param, value, val_type=None):
+        '''
+        Options:
+        * Can use the type of value to build message
+        * Can send a read request and decipher how to build the message from response
+        * Can require an additional argument specifying how to build the set request
+
+        I like combination of 2 and 3
+        '''
+
+        # If no val_type is specified, setParam determines the type expected
+        # from the data of a self.readParam response
+        if not val_type:
+            print('Send read request')
+            response = self.readParam(param)
+            val_type = type(response['data'])
+            if response['error']:
+                raise response['error']
+        print(val_type)
+        request = self._buildSetRequest(param, value, val_type)
         print(param, str(hexlify(request)).upper())
         try:
             self.serial.write(request)
@@ -330,7 +376,7 @@ class Watlow():
         else:
             bytesResponse = self.serial.read(20)
             print(param, 'reponse:', str(hexlify(bytesResponse)).upper())
-            output = self._parseSetResponse(bytesResponse)
+            output = self._parseResponse(bytesResponse)
             return output
 
     def writeBytes(self, dataParam):
@@ -373,5 +419,5 @@ class Watlow():
         else:
             bytesResponse = self.serial.read(20)
             print('reponse:', str(hexlify(bytesResponse, )).upper())
-            #output = self._parseResponse(bytesResponse)
-            #return output
+            output = self._parseResponse(bytesResponse)
+            return output

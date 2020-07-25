@@ -81,7 +81,10 @@ param_default_dict = {
 # Possible Int set request:
 # 55 FF 05 10 00 00 0A EC 01 04 08 03 01 0F 01 00 47 8F ED
 #print(hexlify(watlow._dataCheckByte(unhexlify('01040803010F010047'))))
-print(watlow.writeBytes(8003))
+#print(watlow.writeBytes(8003))
+#print(watlow.setTemp(100))
+#print(watlow.setParam(7001, 71))
+#print(watlow.setParam(8003, 71))
 '''for i in range(0, 16):
     print('01' + hexlify(bytes([i])).decode('utf-8'))
     print(watlow.writeBytes(8003, hexlify(bytes([i])).decode('utf-8')))'''
