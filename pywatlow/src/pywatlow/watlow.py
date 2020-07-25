@@ -103,15 +103,17 @@ class Watlow():
         byte_str = struct.pack('<H', crc_fun(dataBytes))
         return byte_str
 
-    def _formatDataParam(self, dataParam):
-        # Reformats data param from notation in the manual to hex
-        # (e.g. '4001' to '04' and '001' to '0401')
+    def _intDataParamToHex(self, dataParam):
+        # Reformats data param from notation in the manual to hex string
+        # (e.g. '4001' becomes '04' and '001', returned as '0401')
         dataParam = format(int(dataParam), '05d')
         dataParam = hexlify(int(dataParam[:2]).to_bytes(1, 'big') + int(dataParam[2:]).to_bytes(1, 'big')).decode('utf-8')
         return dataParam
 
-    def hexParamToString(self, hexParam):
-        return hexParam
+    def _byteDataParamToInt(self, hexParam):
+        # Reformats data parameter from bytes string to integer
+        # (e.g. b'\x1a\x1d' to 26029)
+        return int(str(hexParam[0]) + format(hexParam[1], '03d'))
 
     def _buildReadRequest(self, dataParam):
         '''
@@ -129,7 +131,7 @@ class Watlow():
 
         # Request Data Parameters
         additionalData = '010301'
-        dataParam = self._formatDataParam(dataParam)
+        dataParam = self._intDataParamToHex(dataParam)
         instance = '01'
         hexData = additionalData + dataParam + instance
 
@@ -162,7 +164,7 @@ class Watlow():
         BACnetPreamble = '55ff'
         requestParam = '05'
         zone = str(9 + self.address)
-        dataParam = self._formatDataParam(dataParam)
+        dataParam = self._intDataParamToHex(dataParam)
         if val_type == float:
             additionalHeader = '00000a'
             hexData = '0104' + dataParam + '0108'
@@ -233,7 +235,7 @@ class Watlow():
             if bytesResponse[6] == 10 and bytesResponse[-6] == 15 and bytesResponse[-5] == 1:
                 #print(hexlify(bytesResponse))
                 data = bytesResponse[-4:-2]
-                param = bytesResponse[11:13]
+                param = self._byteDataParamToInt(bytesResponse[11:13])
                 print('data:', str(hexlify(data)).upper())
                 #print(hexlify(bytesResponse), hexlify(data))
                 data = int.from_bytes(data, byteorder='big')
@@ -244,7 +246,7 @@ class Watlow():
                 ieee_754 = hexlify(bytesResponse[-6:-2])
                 print('ieee_754:', str(hexlify(ieee_754)).upper())
                 data = struct.unpack('>f', unhexlify(ieee_754))[0]
-                param = bytesResponse[10:12]
+                param = self._byteDataParamToInt(bytesResponse[10:12])
             # Case where response data value is an integer from a set param
             # request (e.g. param 8003, heat algorithm, where 62 means 'PID')
             # Hex byte 7: '09'
@@ -254,7 +256,7 @@ class Watlow():
                 print('data:', str(hexlify(data)).upper())
                 #print(hexlify(bytesResponse), hexlify(data))
                 data = int.from_bytes(data, byteorder='big')
-                param = bytesResponse[10:12]
+                param = self._byteDataParamToInt(bytesResponse[10:12])
             # Case where data value is a float representing a process value
             # (e.g. 4001, where current temp of 50.0 is returned)
             # Hex byte 7: '0b'
@@ -262,7 +264,7 @@ class Watlow():
                 ieee_754 = bytesResponse[-6:-2]
                 print('ieee_754:', str(hexlify(ieee_754)).upper())
                 data = struct.unpack('>f', ieee_754)[0]
-                param = bytesResponse[11:13]
+                param = self._byteDataParamToInt(bytesResponse[11:13])
 
             output = {
                         'address': self.address,
@@ -388,7 +390,7 @@ class Watlow():
         hexHeader = BACnetPreamble + requestParam + zone + additionalHeader
 
         # Data portion of request (here the set point value is appended)
-        dataParam = self._formatDataParam(dataParam)
+        dataParam = self._intDataParamToHex(dataParam)
         hexData = '0104' + dataParam + '010f01'
 
         #value = struct.pack('>I', 71)

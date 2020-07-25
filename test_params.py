@@ -38,8 +38,9 @@ param_default_dict = {
 
 
 '''for param in param_default_dict:
-    print(param, watlow.readParam(param)['data'])
-    print(param, watlow._formatDataParam(param))'''
+    print((unhexlify(watlow._intDataParamToHex(param)), param))
+    #print(param, watlow.readParam(param)['data'])
+    #print(param, watlow._formatDataParam(param))'''
 #print(hexlify(b'U\xff\x06\x00\x10\x00\x02\x8f\x02\x85R\xef'))
 #print(hexlify(b'U\xff\x06\x00\x10\x00\nv\x02\x04\x07\x01\x01\x08C\x16\x00\x0059'))
 #print(7001, watlow.readParam(7001))
@@ -83,8 +84,14 @@ param_default_dict = {
 #print(hexlify(watlow._dataCheckByte(unhexlify('01040803010F010047'))))
 #print(watlow.writeBytes(8003))
 #print(watlow.setTemp(100))
-#print(watlow.setParam(7001, 71))
-#print(watlow.setParam(8003, 71))
+print(watlow.setParam(7001, 71))
+print(watlow.setParam(8003, 71))
+#print(unhexlify(watlow._intDataParamToHex(26029)))
+#print(unhexlify(watlow._intDataParamToHex(34018)))
+#print(watlow._byteDataParamToInt(b'\x08\x03'))
+#print(watlow._byteDataParamToInt(b'\x07\x01'))
+#print(watlow._byteDataParamToInt(b'\x1a\x1d'))
+#print(watlow._byteDataParamToInt(b'"\x12'))
 '''for i in range(0, 16):
     print('01' + hexlify(bytes([i])).decode('utf-8'))
     print(watlow.writeBytes(8003, hexlify(bytes([i])).decode('utf-8')))'''
