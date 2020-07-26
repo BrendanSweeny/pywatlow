@@ -172,7 +172,7 @@ class Watlow():
         elif val_type == int:
             additionalHeader = '030009'
             hexData = '0104' + dataParam + '010f01'
-            value = (71).to_bytes(2, 'big')
+            value = value.to_bytes(2, 'big')
 
         # Request Header String:
         hexHeader = BACnetPreamble + requestParam + zone + additionalHeader
