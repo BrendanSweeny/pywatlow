@@ -259,7 +259,7 @@ class TestWatlow:
         '''
         tests = [
             # Actual Responses Received
-            # Tests in the for: (response, address, returned boolean)
+            # Tests in the form: (response, address, returned boolean)
             ('55FF060010000B8802030104010108468F3638DD0E', 1, True),
             ('55ff060010000b8802030104010108468f3abe4346', 1, True),
             ('55FF060010000B8802030104010108468F3638DD0E', 1, True),
@@ -281,3 +281,28 @@ class TestWatlow:
         for test in tests:
             validateResponse = Watlow(serial=None, address=test[1])._validateResponse(unhexlify(test[0]))
             assert validateResponse == test[2], 'msg: {0}, addr: {1}, bool: {2}'.format(*test)
+
+    def test_parseResponse(self):
+        '''
+        Tests that the correct data value is being extracted from each type of
+        response
+
+        Also dependent on _validateResponse
+        '''
+
+        tests = [
+            # Actual responses received
+            # Tests in the form: (response, param, address, data, error)
+            ('55FF06031100097702040803010F010047883B', 8003, 2, 71, False),
+            ('55FF06031100097702040803010F010047883B', None, 1, None, True), # Param: 8003, error from wrong address
+            ('55FF060011000AEE02040701010842A000001579', 7001, 2, 80.0, False),
+            ('55FF060011000B1002030104010108451E40B2F377', 4001, 2, 2532.04345703125, False)
+        ]
+
+        for test in tests:
+            generatedOutput = Watlow(serial=None, address=test[2])._parseResponse(unhexlify(test[0]))
+            test_msg = 'msg: {0}, param: {1}, addr: {2}, data: {3}, isError: {4}'.format(*test)
+            assert generatedOutput['data'] == test[3], test_msg
+            assert generatedOutput['param'] == test[1], test_msg
+            assert generatedOutput['address'] == test[2], test_msg
+            assert (type(generatedOutput['error']) is Exception) == test[4], test_msg

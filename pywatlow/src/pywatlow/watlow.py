@@ -224,9 +224,11 @@ class Watlow():
         except Exception as e:
             output = {
                         'address': self.address,
+                        'param': None,
                         'data': None,
                         'error': e
                      }
+            return output
         else:
             # Case where response data value is an int used to represent a state defined
             # in the manual (e.g. param 8003, heat algorithm, where 62 means 'PID')
