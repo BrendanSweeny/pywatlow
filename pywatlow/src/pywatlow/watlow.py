@@ -277,37 +277,6 @@ class Watlow():
 
             return output
 
-    def _parseSetResponse(self, bytesResponse):
-        '''
-        This is the old parse response function. Until I figure out what the
-        difference between set/read responses are, it will be used by responses
-        to set requests.
-        '''
-        try:
-            if bytesResponse == b'' or bytesResponse == bytearray(len(bytesResponse)):
-                raise Exception('Exception: No response at address {0}'.format(self.address))
-            if not self._validateResponse(bytesResponse):
-                print('Invalid Response at address {0}: '.format(self.address), hexlify(bytesResponse))
-                raise Exception('Exception: Invalid response received from address {0}'.format(self.address))
-        except Exception as e:
-            output = {
-                        'address': self.address,
-                        'data': None,
-                        'error': e
-                     }
-        else:
-
-            ieee_754 = hexlify(bytesResponse[-6:-2])
-            data = struct.unpack('>f', unhexlify(ieee_754))[0]
-            print('ieee_754:', str(hexlify(ieee_754)).upper(), data)
-            output = {
-                        'address': self.address,
-                        'data': data,
-                        'error': None
-                     }
-
-        return output
-
     def readParam(self, param):
         '''
         Takes a parameter and writes data to the watlow controller at
@@ -338,8 +307,7 @@ class Watlow():
 
         Returns a dict containing the response data and address.
         '''
-        value = self._c_to_f(value)
-        request = self._buildSetRequest(7001, value)
+        request = self._buildSetRequest(7001, value, float)
         print(7001, str(hexlify(request)).upper())
 
         try:
@@ -380,48 +348,5 @@ class Watlow():
         else:
             bytesResponse = self.serial.read(20)
             print(param, 'reponse:', str(hexlify(bytesResponse)).upper())
-            output = self._parseResponse(bytesResponse)
-            return output
-
-    def writeBytes(self, dataParam):
-        # Request Header:
-        BACnetPreamble = '55ff'
-        requestParam = '05'
-        zone = str(9 + self.address)
-        additionalHeader = '030009'
-        hexHeader = BACnetPreamble + requestParam + zone + additionalHeader
-
-        # Data portion of request (here the set point value is appended)
-        dataParam = self._intDataParamToHex(dataParam)
-        hexData = '0104' + dataParam + '010f01'
-
-        #value = struct.pack('>I', 71)
-        value = (71).to_bytes(2, 'big')
-        print(value)
-
-        # Convert input strings to bytes:
-        hexHeader = unhexlify(hexHeader)
-        hexData = unhexlify(hexData) + value
-        print(hexData)
-
-        # Calculate check bytes:
-        headerChk = self._headerCheckByte(hexHeader)
-        dataChk = self._dataCheckByte(hexData)
-
-        # Assemble request byte array:
-        request = bytearray(hexHeader)
-        request += bytearray(headerChk)
-        request += bytearray(hexData)
-        request += dataChk
-
-        print(hexlify(request), len(hexlify(request)))
-
-        try:
-            self.serial.write(request)
-        except Exception as e:
-            print('Exception: ', e)
-        else:
-            bytesResponse = self.serial.read(20)
-            print('reponse:', str(hexlify(bytesResponse, )).upper())
             output = self._parseResponse(bytesResponse)
             return output

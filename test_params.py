@@ -87,6 +87,7 @@ param_default_dict = {
 print(watlow.setParam(7001, 80))
 print(watlow.setParam(8003, 71))
 print(watlow.readParam(4001))
+print(watlow.setTemp(100))
 #print(unhexlify(watlow._intDataParamToHex(26029)))
 #print(unhexlify(watlow._intDataParamToHex(34018)))
 #print(watlow._byteDataParamToInt(b'\x08\x03'))
