@@ -3,7 +3,7 @@ import struct
 from binascii import hexlify
 from binascii import unhexlify
 
-watlow = Watlow(port='COM5', address=1)
+watlow = Watlow(port='COM5', address=2)
 
 param_default_dict = {
     4005: 'Thermocouple or Thermistor', # Sensor Type
@@ -38,8 +38,8 @@ param_default_dict = {
 
 
 '''for param in param_default_dict:
-    print((unhexlify(watlow._intDataParamToHex(param)), param))
-    #print(param, watlow.readParam(param)['data'])
+    #print((unhexlify(watlow._intDataParamToHex(param)), param))
+    print(param, watlow.readParam(param)['data'])
     #print(param, watlow._formatDataParam(param))'''
 #print(hexlify(b'U\xff\x06\x00\x10\x00\x02\x8f\x02\x85R\xef'))
 #print(hexlify(b'U\xff\x06\x00\x10\x00\nv\x02\x04\x07\x01\x01\x08C\x16\x00\x0059'))
@@ -84,7 +84,7 @@ param_default_dict = {
 #print(hexlify(watlow._dataCheckByte(unhexlify('01040803010F010047'))))
 #print(watlow.writeBytes(8003))
 #print(watlow.setTemp(100))
-print(watlow.setParam(7001, 71))
+print(watlow.setParam(7001, 80))
 print(watlow.setParam(8003, 71))
 #print(unhexlify(watlow._intDataParamToHex(26029)))
 #print(unhexlify(watlow._intDataParamToHex(34018)))

@@ -95,16 +95,45 @@ class TestWatlow:
         '''
         Tests that read requests are built properly based on the input dataParam
 
-        _buildReadRequest is also dependent on _headerCheckByte and _dataCheckByte
+        _buildReadRequest is also dependent on _headerCheckByte, _dataCheckByte,
+        and _intDataParamToHex
         '''
         test_data = [
             # Test of form (dataParam, address, request)
-            ('4001', 1, '55ff0510000006e8010301040101e399'),
-            ('4002', 1, '55ff0510000006e80103010402018bb3'),
+            ('4001', 1, '55ff0510000006e8010301040101e399'), # Process Value
+            ('4002', 1, '55ff0510000006e80103010402018bb3'), # Set point
             ('7001', 1, '55ff0510000006e80103010701018776'),
             ('4001', 2, '55ff051100000661010301040101e399'),
             ('4002', 2, '55ff0511000006610103010402018bb3'),
-            ('7001', 2, '55ff0511000006610103010701018776')
+            ('7001', 2, '55ff0511000006610103010701018776'),
+            (4001, 2, '55ff051100000661010301040101e399'),
+            (4002, 2, '55ff0511000006610103010402018bb3'),
+            (7001, 2, '55ff0511000006610103010701018776'),
+            (4005, 1, '55FF0510000006E801030104050183FE'), # Sensor Type
+            (4007, 1, '55FF0510000006E801030104070133CD'), # RTD Leads
+            (4042, 1, '55FF0510000006E8010301042A01785E'), # Units
+            (4015, 1, '55FF0510000006E8010301040F01F303'), # Scale Low
+            (4016, 1, '55FF0510000006E8010301041001AA15'), # Scale High
+            (4017, 1, '55FF0510000006E8010301041101720C'), # Range Low
+            (4018, 1, '55FF0510000006E80103010412011A26'), # Range High
+            (4030, 1, '55FF0510000006E8010301041E01BA8F'), # Process error enable
+            (4031, 1, '55FF0510000006E8010301041F016296'), # Process error low value
+            (4037, 1, '55FF0510000006E8010301042501B0DD'), # Resistance Range of thermistor
+            (4014, 1, '55FF0510000006E8010301040E012B1A'), # Filter
+            (4028, 1, '55FF0510000006E8010301041C010ABC'), # Input Error Latching
+            (4020, 1, '55FF0510000006E8010301041401CA72'), # Display precision
+            (4012, 1, '55FF0510000006E8010301040C019B29'), # Calibration offset
+            (34005, 1, '55FF0510000006E8010301220501612B'), # Linearization function
+            (34029, 1, '55FF0510000006E8010301221D013070'), # Linearization Units
+            (34008, 1, '55FF0510000006E8010301220801199B'), # Linearization input point 1
+            (34018, 1, '55FF0510000006E8010301221201F8F3'), # Linearization output point 1
+            (26021, 1, '55FF0510000006E80103011A15019CFE'), # Process Value function
+            (26028, 1, '55FF0510000006E80103011A1C018429'), # Process Value Pressure Units
+            (26029, 1, '55FF0510000006E80103011A1D015C30'), # Altitude Units
+            (26030, 1, '55FF0510000006E80103011A1E01341A'), # Barometric Pressure
+            (26026, 1, '55FF0510000006E80103011A1A01547D'), # Filter
+            (8003, 1, '55FF0510000006E8010301080301F00F'), # Heat Algorithm
+            (6001, 1, '55FF0510000006E80103010601015B2C'), # Digital I/O Direction
         ]
 
         for test in test_data:
@@ -173,19 +202,25 @@ class TestWatlow:
         Tests that set requests are built properly based on the input dataParam
 
         _buildSetRequest is also dependent on _headerCheckByte, _dataCheckByte
-        and _formatDataParam
+        and _intDataParamToHex
         '''
         test_data = [
             # Test of form: dataParam, temperature, value type, address, request
             (7001, 81, float, 1, '55ff051000000aec01040701010842a20000c4b8'),
+            ('7001', 81, float, 1, '55ff051000000aec01040701010842a20000c4b8'),
             (7001, 80, float, 1, '55ff051000000aec01040701010842a000007c0d'),
             (7001, 78, float, 1, '55ff051000000aec010407010108429c0000712e'),
-            (7001, 78.5, float, 1, '55ff051000000aec010407010108429d0000ad74')
+            (7001, 78.5, float, 1, '55ff051000000aec010407010108429d0000ad74'),
+            (7001, 80, float, 2, '55FF051100000A6501040701010842A000007C0D'),
+            (8003, 71, int, 1, '55FF05100300094601040803010F0100478FED'),
+            ('8003', 71, int, 1, '55FF05100300094601040803010F0100478FED'),
+            (8003, 62, int, 1, '55FF05100300094601040803010F01003EC903'),
+            (8003, 71, int, 2, '55FF0511030009CF01040803010F0100478FED')
         ]
 
         for test in test_data:
             setRequest = Watlow(serial=None, address=test[3])._buildSetRequest(dataParam=test[0], value=test[1], val_type=test[2])
-            assert setRequest == unhexlify(test[4]), "param: {0}, val: {1}, addr: {2}, request: {3}".format(*test)
+            assert setRequest == unhexlify(test[4]), "param: {0}, val: {1}, type: {2}, addr: {3}, request: {4}".format(*test)
 
     def test_c_to_f(self):
         '''
