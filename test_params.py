@@ -36,11 +36,40 @@ param_default_dict = {
     8003: 'PID', # Heat Algorithm
 }
 
+param_default_dict_two = [
+    (4005, 95, int, '55FF0511030009CF01040405010F01005F26D8'), # Sensor Type
+    (4007, 1, int, '55FF0511030009CF01040407010F0100018B6B'), # RTD Leads
+    (4042, 75, int, '55FF0511030009CF0104042A010F01004B6A36'), # Units
+    (4015, 0.0, float, '55FF051100000A650104040F0108000000009B21'), # Scale Low
+    (4016, 20.0, float, '55FF051100000A6501040410010841A000007D88'), # Scale High
+    (4017, 0.0, float, '55FF051100000A65010404110108000000007312'), # Range Low
+    (4018, 9999.0, float, '55FF051100000A65010404120108461C3C0004D8'), # Range High
+    (4030, 62, int, '55FF0511030009CF0104041E010F01003E3CC5'), # Process error enable
+    (4031, 0.0, float, '55FF051100000A650104041F0108000000005294'), # Process error low value
+    (4037, 1449, int, '55FF0511030009CF01040425010F0105A947B1'), # Resistance Range of thermistor
+    (4014, 0.5, float, '55FF051100000A650104040E01083F0000004540'), # Filter
+    (4028, 62, int, '55FF0511030009CF0104041C010F01003E6ACD'), # Input Error Latching
+    (4020, 105, int, '55FF0511030009CF01040414010F01006908CA'), # Display precision
+    (4012, 0.0, float, '55FF051100000A650104040C010800000000F589'), # Calibration offset
+    (34005, 62, int, '55FF0511030009CF01042205010F01003EE791'), # Linearization function
+    (34029, 1539, int, '55FF0511030009CF0104221D010F010603B94C'), # Linearization Units
+    (34008, 0.0, float, '55FF051100000A6501042208010800000000C24D'), # Linearization input point 1
+    (34018, 0.0, float, '55FF051100000A65010422120108000000005C11'), # Linearization output point 1
+    (26021, 62, int, '55FF0511030009CF01041A15010F01003EF1DB'), # Process Value function
+    (26028, 1671, int, '55FF0511030009CF01041A1C010F0106871882'), # Process Value Pressure Units
+    (26029, 1677, int, '55FF0511030009CF01041A1D010F01068D6929'), # Altitude Units
+    (26030, 14.7, float, '55FF051100000A6501041A1E0108416B3333C7D9'), # Barometric Pressure
+    (26026, 0.0, float, '55FF051100000A6501041A1A010800000000840F'), # Filter
+    (6001, 68, int, '55FF0511030009CF01040601010F0100446351'), # Digital I/O Direction
+]
+
 
 '''for param in param_default_dict:
     #print((unhexlify(watlow._intDataParamToHex(param)), param))
     print(param, watlow.readParam(param)['data'])
     #print(param, watlow._formatDataParam(param))'''
+for i in param_default_dict_two:
+    print(i[0], watlow.setParam(i[0], i[1], i[2]))
 #print(hexlify(b'U\xff\x06\x00\x10\x00\x02\x8f\x02\x85R\xef'))
 #print(hexlify(b'U\xff\x06\x00\x10\x00\nv\x02\x04\x07\x01\x01\x08C\x16\x00\x0059'))
 #print(7001, watlow.readParam(7001))
@@ -84,10 +113,10 @@ param_default_dict = {
 #print(hexlify(watlow._dataCheckByte(unhexlify('01040803010F010047'))))
 #print(watlow.writeBytes(8003))
 #print(watlow.setTemp(100))
-print(watlow.setParam(7001, 80))
-print(watlow.setParam(8003, 71))
-print(watlow.readParam(4001))
-print(watlow.setTemp(100))
+#print(watlow.setParam(7001, 80))
+#print(watlow.setParam(8003, 71))
+#print(watlow.readParam(4001))
+#print(watlow.setTemp(100))
 #print(unhexlify(watlow._intDataParamToHex(26029)))
 #print(unhexlify(watlow._intDataParamToHex(34018)))
 #print(watlow._byteDataParamToInt(b'\x08\x03'))

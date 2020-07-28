@@ -331,7 +331,7 @@ class Watlow():
         '''
 
         # If no val_type is specified, setParam determines the type expected
-        # from the data of a self.readParam response
+        # from the data of a self.readParam response parsed using _parseResponse
         if not val_type:
             print('Send read request')
             response = self.readParam(param)
