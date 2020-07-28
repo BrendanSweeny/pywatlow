@@ -284,7 +284,7 @@ class Watlow():
 
         * **param**: a four digit integer corresponding to a Watlow parameter (e.g. 4001, 7001)
 
-        Returns a dict containing the response data and address.
+        Returns a dict containing the response data, parameter ID, and address.
         '''
         request = self._buildReadRequest(param)
         print(param, str(hexlify(request)).upper())
@@ -305,7 +305,9 @@ class Watlow():
 
         * **value**: an int or float representing the new target setpoint in degrees F by default
 
-        Returns a dict containing the response data and address.
+        This function is equivalent to `setParam(7001, value, float)`.
+
+        Returns a dict containing the response data, parameter ID, and address.
         '''
         request = self._buildSetRequest(7001, value, float)
         print(7001, str(hexlify(request)).upper())
@@ -322,12 +324,16 @@ class Watlow():
 
     def setParam(self, param, value, val_type=None):
         '''
-        Options:
-        * Can use the type of value to build message
-        * Can send a read request and decipher how to build the message from response
-        * Can require an additional argument specifying how to build the set request
+        Changes the value of the passed watlow parameter ID
 
-        I like combination of 2 and 3
+        * **value**: an int or float representing the new target setpoint in degrees F by default
+        * **val_type** (optional): the Python type representing the data value type (i.e. `int` or `float`)
+
+        `val_type` is used to determine how the BACnet TP/MS message will be constructed.
+        If `val_type` is `None`, pywatlow will call `readParam` on the passed parameter ID
+        to determine the returned value's type instead.
+
+        Returns a dict containing the response data, parameter ID, and address.
         '''
 
         # If no val_type is specified, setParam determines the type expected

@@ -85,3 +85,10 @@ Where the value/response is an integer:
 .. csv-table:: Messages from CSV
   :file: messages_set_int.csv
   :header-rows: 1
+
+Errors
+^^^^^^
+
+This is likely an access denied error response received when trying to write a
+read only parameter (4001, 100 degrees, address 2):
+`55FF0600110002170280FFB8`
