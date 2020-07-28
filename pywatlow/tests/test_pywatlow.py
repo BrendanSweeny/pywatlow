@@ -327,7 +327,8 @@ class TestWatlow:
             ('55FF06031100097702040803010F010047883B', 8003, 2, 71, False),
             ('55FF06031100097702040803010F010047883B', None, 1, None, True), # Param: 8003, error from wrong address
             ('55FF060011000AEE02040701010842A000001579', 7001, 2, 80.0, False),
-            ('55FF060011000B1002030104010108451E40B2F377', 4001, 2, 2532.04345703125, False)
+            ('55FF060011000B1002030104010108451E40B2F377', 4001, 2, 2532.04345703125, False),
+            ('55FF0600110002170280FFB8', None, 2, None, True) # Param: 4001, error from trying to write to read-only param
         ]
 
         for test in tests:

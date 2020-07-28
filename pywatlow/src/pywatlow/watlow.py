@@ -215,19 +215,20 @@ class Watlow():
         Takes the full response byte array and extracts the relevant data (e.g.
         current temperature), constructs response dict, and returns it.
         '''
+        output = {
+                    'address': self.address,
+                    'param': None,
+                    'data': None,
+                    'error': None
+                 }
         try:
             if bytesResponse == b'' or bytesResponse == bytearray(len(bytesResponse)):
-                raise Exception('Exception: No response at address {0}'.format(self.address))
+                raise Exception('Exception: No response from address {0}'.format(self.address))
             if not self._validateResponse(bytesResponse):
                 print('Invalid Response at address {0}: '.format(self.address), hexlify(bytesResponse))
                 raise Exception('Exception: Invalid response received from address {0}'.format(self.address))
         except Exception as e:
-            output = {
-                        'address': self.address,
-                        'param': None,
-                        'data': None,
-                        'error': e
-                     }
+            output['error'] = e
             return output
         else:
             # Case where response data value is an int used to represent a state defined
@@ -237,18 +238,18 @@ class Watlow():
             if bytesResponse[6] == 10 and bytesResponse[-6] == 15 and bytesResponse[-5] == 1:
                 #print(hexlify(bytesResponse))
                 data = bytesResponse[-4:-2]
-                param = self._byteDataParamToInt(bytesResponse[11:13])
+                output['param'] = self._byteDataParamToInt(bytesResponse[11:13])
                 print('data:', str(hexlify(data)).upper())
                 #print(hexlify(bytesResponse), hexlify(data))
-                data = int.from_bytes(data, byteorder='big')
+                output['data'] = int.from_bytes(data, byteorder='big')
             # Case where response data value is a float from a set param request
             # (e.g. 7001, process value setpoint)
             # Hex byte 7: '0a', Hex byte 14: '08'
             elif bytesResponse[6] == 10 and bytesResponse[-7] == 8:
                 ieee_754 = hexlify(bytesResponse[-6:-2])
                 print('ieee_754:', str(hexlify(ieee_754)).upper())
-                data = struct.unpack('>f', unhexlify(ieee_754))[0]
-                param = self._byteDataParamToInt(bytesResponse[10:12])
+                output['data'] = struct.unpack('>f', unhexlify(ieee_754))[0]
+                output['param'] = self._byteDataParamToInt(bytesResponse[10:12])
             # Case where response data value is an integer from a set param
             # request (e.g. param 8003, heat algorithm, where 62 means 'PID')
             # Hex byte 7: '09'
@@ -257,23 +258,19 @@ class Watlow():
                 data = bytesResponse[-4:-2]
                 print('data:', str(hexlify(data)).upper())
                 #print(hexlify(bytesResponse), hexlify(data))
-                data = int.from_bytes(data, byteorder='big')
-                param = self._byteDataParamToInt(bytesResponse[10:12])
+                output['data'] = int.from_bytes(data, byteorder='big')
+                output['param'] = self._byteDataParamToInt(bytesResponse[10:12])
             # Case where data value is a float representing a process value
             # (e.g. 4001, where current temp of 50.0 is returned)
             # Hex byte 7: '0b'
             elif bytesResponse[6] == 11:
                 ieee_754 = bytesResponse[-6:-2]
                 print('ieee_754:', str(hexlify(ieee_754)).upper())
-                data = struct.unpack('>f', ieee_754)[0]
-                param = self._byteDataParamToInt(bytesResponse[11:13])
-
-            output = {
-                        'address': self.address,
-                        'param': param,
-                        'data': data,
-                        'error': None
-                     }
+                output['data'] = struct.unpack('>f', ieee_754)[0]
+                output['param'] = self._byteDataParamToInt(bytesResponse[11:13])
+            # Other cases, such as response from trying to write a read-only parameter:
+            else:
+                output['error'] = Exception('Received a message that could not be parsed from address {0}'.format(self.address))
 
             return output
 
