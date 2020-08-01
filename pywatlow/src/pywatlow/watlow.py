@@ -151,7 +151,7 @@ class Watlow():
 
         return request
 
-    def _buildSetRequest(self, dataParam, value, val_type):
+    def _buildWriteRequest(self, dataParam, value, val_type):
         '''
         Takes the set point temperature value, converts to bytes objects, calls
         internal functions to calc check bytes, and assembles/returns the request
@@ -274,12 +274,13 @@ class Watlow():
 
             return output
 
-    def readParam(self, param):
+    def read(self, param=4001):
         '''
-        Takes a parameter and writes data to the watlow controller at
-        object's internal address.
+        Reads the current value of the passed parameter ID.
 
         * **param**: a four digit integer corresponding to a Watlow parameter (e.g. 4001, 7001)
+
+        `param` is 4001, the process value (i.e. current temperature), by default.
 
         Returns a dict containing the response data, parameter ID, and address.
         '''
@@ -290,41 +291,22 @@ class Watlow():
         except Exception as e:
             print('Exception: ', e)
         else:
+            # Currently, this relies on a timeout when the data being returned is an int
+            # The message is 20 bytes long in that case
             response = self.serial.read(21)
             print(param, 'reponse:', str(hexlify(response)).upper())
             output = self._parseResponse(response)
             return output
 
-    def setTemp(self, value):
-        '''
-        Changes the watlow temperature setpoint. Takes a value (in degrees F by default), builds request, writes to watlow,
-        receives and returns response object.
-
-        * **value**: an int or float representing the new target setpoint in degrees F by default
-
-        This function is equivalent to `setParam(7001, value, float)`.
-
-        Returns a dict containing the response data, parameter ID, and address.
-        '''
-        request = self._buildSetRequest(7001, value, float)
-        print(7001, str(hexlify(request)).upper())
-
-        try:
-            self.serial.write(request)
-        except Exception as e:
-            print('Exception: ', e)
-        else:
-            bytesResponse = self.serial.read(20)
-            print(7001, 'reponse:', str(hexlify(bytesResponse)).upper())
-            output = self._parseResponse(bytesResponse)
-            return output
-
-    def setParam(self, param, value, val_type=None):
+    def write(self, value, param=7001, val_type=None):
         '''
         Changes the value of the passed watlow parameter ID
 
-        * **value**: an int or float representing the new target setpoint in degrees F by default
+        * **value**: an int or float representing the new value of the passed `param`
+        * **param**: a four digit integer corresponding to a Watlow parameter (e.g. 7001)
         * **val_type** (optional): the Python type representing the data value type (i.e. `int` or `float`)
+
+        By default, `param` is 7001, the process setpoint temperature.
 
         `val_type` is used to determine how the BACnet TP/MS message will be constructed.
         If `val_type` is `None`, pywatlow will call `readParam` on the passed parameter ID
@@ -333,23 +315,26 @@ class Watlow():
         Returns a dict containing the response data, parameter ID, and address.
         '''
 
-        # If no val_type is specified, setParam determines the type expected
-        # from the data of a self.readParam response parsed using _parseResponse
+        # If no val_type is specified, self.write() determines the type expected
+        # from the data of a self.read() response parsed using _parseResponse
         if not val_type:
             print('Send read request')
-            response = self.readParam(param)
+            response = self.read(param)
             val_type = type(response['data'])
             if response['error']:
                 raise response['error']
         print(val_type)
-        request = self._buildSetRequest(param, value, val_type)
+        request = self._buildWriteRequest(param, value, val_type)
         print(param, str(hexlify(request)).upper())
         try:
             self.serial.write(request)
         except Exception as e:
             print('Exception: ', e)
         else:
-            bytesResponse = self.serial.read(20)
+            if val_type == float:
+                bytesResponse = self.serial.read(20)
+            elif val_type == int:
+                bytesResponse = self.serial.read(19)
             print(param, 'reponse:', str(hexlify(bytesResponse)).upper())
             output = self._parseResponse(bytesResponse)
             return output

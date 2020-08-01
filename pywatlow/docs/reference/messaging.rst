@@ -30,7 +30,7 @@ How to read the example message tables:
 Read Requests
 -------------
 
-* Read requests seem to be 16 bytes long with a corresponding response that is 21 bytes long
+* Read requests seem to be 16 bytes long no matter the data type
 * Byte 7 is 06 for read requests
 * Bytes 12 and 13 represent the parameter to be read
 * Byte 14 is the instance, generally 01
@@ -69,7 +69,7 @@ Where the value/response is a float
 * Request is 20 bytes long
 * Response is 20 bytes long
 * Byte 7 is 0A when the process value is a float
-* When the process value is a float, the byte preceeding the data (14) is 08
+* When the process value is a float, the byte preceding the data (14) is 08
 
 .. csv-table:: Example Messages
   :file: messages_set_float.csv

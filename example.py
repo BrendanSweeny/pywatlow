@@ -1,13 +1,10 @@
 from pywatlow.watlow import Watlow
-import serial
+watlow = Watlow(port='COM5', address=1)
 
-ser = serial.Serial()
-ser.port = 'COM5'
-ser.baudrate = 38400
-ser.timeout = 0.5
-ser.open()
+print(watlow.read(8003))
+print(watlow.write(64, 8003, int))
 
-watlow_one = Watlow(serial=ser, address=1)
-watlow_two = Watlow(serial=ser, address=2)
-print(watlow_one.readParam(7001))
-print(watlow_two.readParam(4001))
+# pywatlow will call read() to determine message structure if no val_type is provided
+print(watlow.write(71, 8003))
+
+print(watlow.write(71, 8003, float))

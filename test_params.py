@@ -36,6 +36,7 @@ param_default_dict = {
     8003: 'PID', # Heat Algorithm
 }
 
+# These should all be defaults
 param_default_dict_two = [
     (4005, 95, int, '55FF0511030009CF01040405010F01005F26D8'), # Sensor Type
     (4007, 1, int, '55FF0511030009CF01040407010F0100018B6B'), # RTD Leads
@@ -68,8 +69,8 @@ param_default_dict_two = [
     #print((unhexlify(watlow._intDataParamToHex(param)), param))
     print(param, watlow.readParam(param)['data'])
     #print(param, watlow._formatDataParam(param))'''
-'''for i in param_default_dict_two:
-    print(i[0], watlow.setParam(i[0], i[1], i[2]))'''
+for i in param_default_dict_two:
+    print(i[0], watlow.setParam(i[0], i[1], i[2]))
 
 #print(watlow.setParam(4001, 100, float))
 #print(hexlify(b'U\xff\x06\x00\x10\x00\x02\x8f\x02\x85R\xef'))
