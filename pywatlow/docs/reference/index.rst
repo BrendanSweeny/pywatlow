@@ -4,6 +4,5 @@ Reference
 .. toctree::
     :glob:
 
-    pywatlow
     watlow
     messaging

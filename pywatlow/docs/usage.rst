@@ -46,9 +46,9 @@ To use pywatlow in a project::
 	print(watlow.setTemp(55))
 
 	##### Returns #####
-	{'address': 1, 'data': 50.5, 'error': None}
-	{'address': 1, 'data': 50.0, 'error': None}
-	{'address': 1, 'data': 55.0, 'error': None}
+	{'address': 1, 'param': 4001, 'data': 50.5, 'error': None}
+	{'address': 1, 'param': 7001, 'data': 50.0, 'error': None}
+	{'address': 1, 'param': 7001, 'data': 55.0, 'error': None}
 
 Using multiple temperature controllers on a single USB to RS485 converter::
 
@@ -67,16 +67,45 @@ Using multiple temperature controllers on a single USB to RS485 converter::
 	print(watlow_two.readParam(4001))
 
 	##### Returns #####
-	{'address': 1, 'data': 50.5, 'error': None}
-	{'address': 2, 'data': 60.0, 'error': None}
+	{'address': 1, 'param': 4001, 'data': 50.5, 'error': None}
+	{'address': 2, 'param': 4001, 'data': 60.0, 'error': None}
 
 
 Reading Other Parameters
 ========================
 
-Currently, only parameters for the current temperature (4001) and the setpoint (7001)
-have been tested.
+The messaging structure for Watlow temperature controllers is set up to return data
+as integers or floats depending on the nature of the data. Often, ints are used
+to represent a state, such as in parameter ID 8003, the control loop heat algorithm.
+Here, a returned value of 71 corresponds to the PID algorithm, whereas 64 corresponds
+to a simpler "on-off" algorithm.
 
+We can read the state of 8003 like so::
+
+	from pywatlow.watlow import Watlow
+	watlow = Watlow(port='COM5', address=1)
+
+	watlow.readParam(8003)
+
+	##### Returns #####
+	{'address': 1, 'param': 8003, 'data': 71, 'error': None}  # 71 --> PID algorithm
+
+See the Watlow user manual for more information about the different parameter IDs
+and their functions.
+
+Setting Other Parameters
+========================
+
+`watlow.setParam()` is used to write to specific Watlow parameters.
+The message structure required for the set request depends on the data type (int or float).
+Pywatlow will build the message based on this data type, which can be specified by
+passing the type class (either `int` or `float`) to the `val_type` argument.
+
+`val_type` is optional. If `val_type=None`, pywatlow will first attempt to read the state
+of the passed parameter ID in order to determine the correct way to build the
+message, then Pywatlow will write the value to the parameter. Passing the incorrect type to
+`val_type` will result in an error (e.g. `watlow.setParam(7001, 200.0, int)`).
+To see which data type each parameter expects, see the Watlow controller `documentation <https://www.watlow.com/-/media/documents/user-manuals/pm-pid-1.ashx>`_.
 
 Error Handling
 ==============
@@ -88,5 +117,5 @@ Here there is no temperature controller at address 2::
 	print(watlow_two.readParam(4001))
 
 	##### Returns #####
-	{'address': 1, 'data': 55.0, 'error': None}
-	{'address': 2, 'data': None, 'error': Exception('Exception: No response at address 2')}
+	{'address': 1, 'param': 4001, 'data': 55.0, 'error': None}
+	{'address': 2, 'param': None, 'data': None, 'error': Exception('Exception: No response at address 2')}
