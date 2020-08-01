@@ -40,4 +40,6 @@ def main(args=None):
     elif args.set:
         watlow = Watlow(port=args.set[0], address=int(args.set[1]))
         print(watlow.setTemp(int(args.set[2])))
+    else:
+        parser.print_help()
     return 0
