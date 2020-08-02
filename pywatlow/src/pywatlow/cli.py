@@ -23,7 +23,7 @@ group = parser.add_mutually_exclusive_group()
 group.add_argument('-r', '--read', metavar=('PORT', 'ADDR', 'PARAM'), nargs=3,
                    help='Read a specific Watlow parameter. Specify the port, RS485 address, and parameter to read \
                    (e.g. "4001" for temperature, "7001" for setpoint). Other values can be found in the Watlow user manual')
-group.add_argument('-s', '--set', metavar=('PORT', 'ADDR', 'TEMP'), nargs=3,
+group.add_argument('-w', '--write', metavar=('PORT', 'ADDR', 'TEMP'), nargs=3,
                    help='Change the setpoint temperature. Specify the port, RS485 address, and desired setpoint temperature in Celcius')
 
 
@@ -36,8 +36,13 @@ def main(args=None):
 
     if args.read:
         watlow = Watlow(port=args.read[0], address=int(args.read[1]))
-        print(watlow.readParam(int(args.read[2])))
-    elif args.set:
-        watlow = Watlow(port=args.set[0], address=int(args.set[1]))
-        print(watlow.setTemp(int(args.set[2])))
+        if args.read[2] == '4001' or args.read[2] == '7001':
+            print(watlow.readParam(int(args.read[2]), float))
+        else:
+            print('Use parameter 4001 for current temperature or 7001 for current setpoint.')
+    elif args.write:
+        watlow = Watlow(port=args.write[0], address=int(args.write[1]))
+        print(watlow.write(int(args.write[2])))
+    else:
+        parser.print_help()
     return 0

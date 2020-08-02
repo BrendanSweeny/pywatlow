@@ -8,7 +8,9 @@ import serial as ser
 
 class Watlow():
     '''
-    Object representing a Watlow PID temperature controller.
+    Object representing a Watlow PID temperature controller. This class
+    facilitates the generation and parsing of BACnet TP/MS messages to and from
+    Watlow temperature controllers.
 
     * **serial**: serial object (see pySerial's serial.Serial class) or `None`
     * **port** (str): string representing the serial port or `None`
@@ -16,7 +18,8 @@ class Watlow():
     * **address** (int): Watlow controller address (found in the setup menu). Acceptable values are 1 through 16.
 
     `timeout` and `port` are not necessary if a serial object was already passed
-    with those arguments.
+    with those arguments. The baudrate for Watlow temperature controllers is 38400
+    and hardcoded.
     '''
     def __init__(self, serial=None, port=None, timeout=0.5, address=1):
         self.timeout = timeout
@@ -103,6 +106,18 @@ class Watlow():
         byte_str = struct.pack('<H', crc_fun(dataBytes))
         return byte_str
 
+    def _intDataParamToHex(self, dataParam):
+        # Reformats data param from notation in the manual to hex string
+        # (e.g. '4001' becomes '04' and '001', returned as '0401')
+        dataParam = format(int(dataParam), '05d')
+        dataParam = hexlify(int(dataParam[:2]).to_bytes(1, 'big') + int(dataParam[2:]).to_bytes(1, 'big')).decode('utf-8')
+        return dataParam
+
+    def _byteDataParamToInt(self, hexParam):
+        # Reformats data parameter from bytes string to integer
+        # (e.g. b'\x1a\x1d' to 26029)
+        return int(str(hexParam[0]) + format(hexParam[1], '03d'))
+
     def _buildReadRequest(self, dataParam):
         '''
         Takes the watlow parameter ID, converts to bytes objects, calls
@@ -119,10 +134,7 @@ class Watlow():
 
         # Request Data Parameters
         additionalData = '010301'
-        # Reformats data param from notation in the manual to hex
-        # (e.g. '4001' to '04' and '001' to '0401')
-        dataParam = format(int(dataParam), '05d')
-        dataParam = hexlify(int(dataParam[:2]).to_bytes(1, 'big') + int(dataParam[2:]).to_bytes(1, 'big')).decode('utf-8')
+        dataParam = self._intDataParamToHex(dataParam)
         instance = '01'
         hexData = additionalData + dataParam + instance
 
@@ -142,7 +154,7 @@ class Watlow():
 
         return request
 
-    def _buildSetTempRequest(self, value):
+    def _buildWriteRequest(self, dataParam, value, data_type):
         '''
         Takes the set point temperature value, converts to bytes objects, calls
         internal functions to calc check bytes, and assembles/returns the request
@@ -152,20 +164,25 @@ class Watlow():
         part of the hex command is assembled. It is different than a normal read
         command.
         '''
-        # Request Header:
         BACnetPreamble = '55ff'
         requestParam = '05'
         zone = str(9 + self.address)
-        additionalHeader = '00000a'
+        dataParam = self._intDataParamToHex(dataParam)
+        if data_type == float:
+            additionalHeader = '00000a'
+            hexData = '0104' + dataParam + '0108'
+            value = struct.pack('>f', float(value))
+        elif data_type == int:
+            additionalHeader = '030009'
+            hexData = '0104' + dataParam + '010f01'
+            value = value.to_bytes(2, 'big')
+
+        # Request Header String:
         hexHeader = BACnetPreamble + requestParam + zone + additionalHeader
-
-        # Data portion of request (here the set point value is appended)
-        hexData = '010407010108'
-
-        value = struct.pack('>f', value)
-
         # Convert input strings to bytes:
         hexHeader = unhexlify(hexHeader)
+
+        # Data portion of request (here the set point value is appended)
         hexData = unhexlify(hexData) + value
 
         # Calculate check bytes:
@@ -201,75 +218,163 @@ class Watlow():
         Takes the full response byte array and extracts the relevant data (e.g.
         current temperature), constructs response dict, and returns it.
         '''
+        output = {
+                    'address': self.address,
+                    'param': None,
+                    'data': None,
+                    'error': None
+                 }
         try:
             if bytesResponse == b'' or bytesResponse == bytearray(len(bytesResponse)):
-                raise Exception('Exception: No response at address {0}'.format(self.address))
+                raise Exception('Exception: No response from address {0}'.format(self.address))
             if not self._validateResponse(bytesResponse):
                 print('Invalid Response at address {0}: '.format(self.address), hexlify(bytesResponse))
                 raise Exception('Exception: Invalid response received from address {0}'.format(self.address))
         except Exception as e:
-            output = {
-                        'address': self.address,
-                        'data': None,
-                        'error': e
-                     }
+            output['error'] = e
+            return output
         else:
-            # Case where data value is an int used to represent a state defined
+            # Case where response data value is an int used to represent a state defined
             # in the manual (e.g. param 8003, heat algorithm, where 62 means 'PID')
-            if bytesResponse[6] == 10:
-                #print(hexlify(bytesResponse))
+            # from a read request
+            # Hex byte 7: '0a', Hex bytes 15, 16: 0F, 01
+            if bytesResponse[6] == 10 and bytesResponse[-6] == 15 and bytesResponse[-5] == 1:
+                # print(hexlify(bytesResponse))
                 data = bytesResponse[-4:-2]
-                #print(hexlify(bytesResponse), hexlify(data))
-                data = int.from_bytes(data, byteorder='big')
+                output['param'] = self._byteDataParamToInt(bytesResponse[11:13])
+                print('data:', str(hexlify(data)).upper())
+                # print(hexlify(bytesResponse), hexlify(data))
+                output['data'] = int.from_bytes(data, byteorder='big')
+            # Case where response data value is a float from a set param request
+            # (e.g. 7001, process value setpoint)
+            # Hex byte 7: '0a', Hex byte 14: '08'
+            elif bytesResponse[6] == 10 and bytesResponse[-7] == 8:
+                ieee_754 = hexlify(bytesResponse[-6:-2])
+                print('ieee_754:', str(hexlify(ieee_754)).upper())
+                output['data'] = struct.unpack('>f', unhexlify(ieee_754))[0]
+                output['param'] = self._byteDataParamToInt(bytesResponse[10:12])
+            # Case where response data value is an integer from a set param
+            # request (e.g. param 8003, heat algorithm, where 62 means 'PID')
+            # Hex byte 7: '09'
+            elif bytesResponse[6] == 9:
+                # print(hexlify(bytesResponse))
+                data = bytesResponse[-4:-2]
+                print('data:', str(hexlify(data)).upper())
+                # print(hexlify(bytesResponse), hexlify(data))
+                output['data'] = int.from_bytes(data, byteorder='big')
+                output['param'] = self._byteDataParamToInt(bytesResponse[10:12])
             # Case where data value is a float representing a process value
             # (e.g. 4001, where current temp of 50.0 is returned)
+            # Hex byte 7: '0b'
             elif bytesResponse[6] == 11:
                 ieee_754 = bytesResponse[-6:-2]
-                data = struct.unpack('>f', ieee_754)[0]
-            output = {
-                        'address': self.address,
-                        'data': data,
-                        'error': None
-                     }
+                print('ieee_754:', str(hexlify(ieee_754)).upper())
+                output['data'] = struct.unpack('>f', ieee_754)[0]
+                output['param'] = self._byteDataParamToInt(bytesResponse[11:13])
+            # Other cases, such as response from trying to write a read-only parameter:
+            else:
+                output['error'] = Exception('Received a message that could not be parsed from address {0}'.format(self.address))
 
             return output
 
-    def readParam(self, param):
+    def read(self):
+        '''
+        Reads the current temperature. This is a wrapper around `readParam()`
+        and is equivalent to `readParam(4001, float)`.
+
+        Returns a dict containing the response data, parameter ID, and address.
+        '''
+        return self.readParam(4001, float)
+
+    def readSetpoint(self):
+        '''
+        Reads the current setpoint. This is a wrapper around `readParam()` and is
+        equivalent to `readParam(7001, float)`.
+
+        Returns a dict containing the response data, parameter ID, and address.
+        '''
+        return self.readParam(7001, float)
+
+    def readParam(self, param, data_type):
         '''
         Takes a parameter and writes data to the watlow controller at
-        object's internal address.
+        object's internal address. Using this function requires knowing the data
+        type for the parameter (int or float). See the Watlow
+        `user manual <https://www.watlow.com/-/media/documents/user-manuals/pm-pid-1.ashx>`_
+        for individual parameters and the Usage section of these docs.
 
         * **param**: a four digit integer corresponding to a Watlow parameter (e.g. 4001, 7001)
+        * **data_type**: the Python type representing the data value type (i.e. `int` or `float`)
 
-        Returns a dict containing the response data and address.
+        `data_type` is used to determine how many characters to read
+        following the controller's response. If int is passed when the data type
+        should be float, it will not read the entire message and will throw an
+        error. If float is passed when it should be int, it will timeout,
+        possibly reading correctly. If multiple instances of `Watlow()` are using
+        the same serial port for different controllers it will read too many
+        characters. It is best to be completely sure which data type is being used
+        by each parameter (`int` or `float`).
+
+        Returns a dict containing the response data, parameter ID, and address.
         '''
         request = self._buildReadRequest(param)
+        print(param, str(hexlify(request)).upper())
         try:
             self.serial.write(request)
         except Exception as e:
             print('Exception: ', e)
         else:
-            response = self.serial.read(21)
+            if data_type == float:
+                response = self.serial.read(21)
+            elif data_type == int:
+                response = self.serial.read(20)
+            print(param, 'response:', str(hexlify(response)).upper())
             output = self._parseResponse(response)
             return output
 
-    def setTemp(self, value):
+    def write(self, value):
         '''
-        Changes the watlow temperature setpoint. Takes a value (in degrees F by default), builds request, writes to watlow,
-        receives and returns response object.
+        Changes the watlow temperature setpoint. Takes a value (in degrees F by
+        default), builds request, writes to watlow, receives and returns response
+        object.
 
         * **value**: an int or float representing the new target setpoint in degrees F by default
 
-        Returns a dict containing the response data and address.
-        '''
-        value = self._c_to_f(value)
-        request = self._buildSetTempRequest(value)
+        This is a wrapper around `writeParam()` and is equivalent to
+        `writeParam(7001, value, float)`.
 
+        Returns a dict containing the response data, parameter ID, and address.
+        '''
+        return self.writeParam(7001, value, float)
+
+    def writeParam(self, param, value, data_type):
+        '''
+        Changes the value of the passed watlow parameter ID. Using this function
+        requires knowing the data type for the parameter (int or float).
+        See the Watlow
+        `user manual <https://www.watlow.com/-/media/documents/user-manuals/pm-pid-1.ashx>`_
+        for individual parameters and the Usage section of these docs.
+
+        * **value**: an int or float representing the new target setpoint in degrees F by default
+        * **data_type**: the Python type representing the data value type (i.e. `int` or `float`)
+
+        `data_type` is used to determine how the BACnet TP/MS message will be constructed
+        and how many serial characters to read following the controller's response.
+
+        Returns a dict containing the response data, parameter ID, and address.
+        '''
+        print(data_type)
+        request = self._buildWriteRequest(param, value, data_type)
+        print(param, str(hexlify(request)).upper())
         try:
             self.serial.write(request)
         except Exception as e:
             print('Exception: ', e)
         else:
-            bytesResponse = self.serial.read(20)
+            if data_type == float:
+                bytesResponse = self.serial.read(20)
+            elif data_type == int:
+                bytesResponse = self.serial.read(19)
+            print(param, 'reponse:', str(hexlify(bytesResponse)).upper())
             output = self._parseResponse(bytesResponse)
             return output
