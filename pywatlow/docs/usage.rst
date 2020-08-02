@@ -33,8 +33,8 @@ This is equivalent to calling `Watlow(port='COM5',address=1).write(50)`::
 	>>> pywatlow -w COM5 1 60
 	{'address': 1, 'param': 7001, 'data': 60.0, 'error': None}
 
-At this time, CLI usage only supports reading parameters whose data types return
-floats.
+At this time, CLI usage only supports reading the current temperature and the
+current setpoint.
 
 Module Usage
 ============
@@ -115,6 +115,7 @@ Example::
 
 	print(watlow.readParam(8003, int))
 	print(watlow.writeParam(8003, 64, int))
+	print(watlow.writeParam(8003, 71, int))
 
 	# Here the incorrect data type is given:
 	print(watlow.writeParam(8003, 71, float))

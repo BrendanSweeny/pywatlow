@@ -40,9 +40,9 @@ def main(args=None):
             print(watlow.readParam(int(args.read[2]), float))
         else:
             print('Use parameter 4001 for current temperature or 7001 for current setpoint.')
-    elif args.set:
-        watlow = Watlow(port=args.set[0], address=int(args.set[1]))
-        print(watlow.write(int(args.set[2])))
+    elif args.write:
+        watlow = Watlow(port=args.write[0], address=int(args.write[1]))
+        print(watlow.write(int(args.write[2])))
     else:
         parser.print_help()
     return 0
