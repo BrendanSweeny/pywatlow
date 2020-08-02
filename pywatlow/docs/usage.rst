@@ -30,7 +30,7 @@ This is equivalent to calling `Watlow(port='COM5',address=1).write(50)`::
 
 	# Change the setpoint of the Watlow controller
 	# at address 1 on serial port COM5:
-	>>> pywatlow -s COM5 1 60
+	>>> pywatlow -w COM5 1 60
 	{'address': 1, 'param': 7001, 'data': 60.0, 'error': None}
 
 At this time, CLI usage only supports reading parameters whose data types return
