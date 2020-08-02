@@ -36,6 +36,7 @@ param_default_dict = {
     8003: 'PID', # Heat Algorithm
 }
 
+# These should all be defaults
 param_default_dict_two = [
     (4005, 95, int, '55FF0511030009CF01040405010F01005F26D8'), # Sensor Type
     (4007, 1, int, '55FF0511030009CF01040407010F0100018B6B'), # RTD Leads

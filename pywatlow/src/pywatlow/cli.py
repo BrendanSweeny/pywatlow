@@ -23,7 +23,7 @@ group = parser.add_mutually_exclusive_group()
 group.add_argument('-r', '--read', metavar=('PORT', 'ADDR', 'PARAM'), nargs=3,
                    help='Read a specific Watlow parameter. Specify the port, RS485 address, and parameter to read \
                    (e.g. "4001" for temperature, "7001" for setpoint). Other values can be found in the Watlow user manual')
-group.add_argument('-s', '--set', metavar=('PORT', 'ADDR', 'TEMP'), nargs=3,
+group.add_argument('-w', '--write', metavar=('PORT', 'ADDR', 'TEMP'), nargs=3,
                    help='Change the setpoint temperature. Specify the port, RS485 address, and desired setpoint temperature in Celcius')
 
 

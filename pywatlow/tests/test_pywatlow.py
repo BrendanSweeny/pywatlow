@@ -1,7 +1,4 @@
 
-# TODO: Add a test that confirms the type of data being returned from readParam
-# is correct since it is used when no type is supplied to setParam
-
 from binascii import unhexlify
 
 import pytest
@@ -200,15 +197,15 @@ class TestWatlow:
             generatedDataParam = Watlow()._byteDataParamToInt(test[0])
             assert generatedDataParam == test[1]
 
-    def test_buildSetRequest(self):
+    def test_buildWriteRequest(self):
         '''
         Tests that set requests are built properly based on the input dataParam
 
-        _buildSetRequest is also dependent on _headerCheckByte, _dataCheckByte
+        _buildWriteRequest is also dependent on _headerCheckByte, _dataCheckByte
         and _intDataParamToHex
 
-        If the type of data is not provided, _buildSetRequestalso relies on
-        readParam and _parseResponse to determine the data value type from a
+        If the type of data is not provided, _buildWriteRequest() also relies on
+        read() and _parseResponse() to determine the data value type from a
         read request
         '''
         test_data = [
