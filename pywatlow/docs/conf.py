@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-import os, sys
+import os
+import sys
 import unittest.mock as mock
 
 MOCK_MODULES = ['crcmod', 'serial']

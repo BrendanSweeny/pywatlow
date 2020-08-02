@@ -154,7 +154,7 @@ class Watlow():
 
         return request
 
-    def _buildSetRequest(self, dataParam, value, data_type):
+    def _buildWriteRequest(self, dataParam, value, data_type):
         '''
         Takes the set point temperature value, converts to bytes objects, calls
         internal functions to calc check bytes, and assembles/returns the request
@@ -239,11 +239,11 @@ class Watlow():
             # from a read request
             # Hex byte 7: '0a', Hex bytes 15, 16: 0F, 01
             if bytesResponse[6] == 10 and bytesResponse[-6] == 15 and bytesResponse[-5] == 1:
-                #print(hexlify(bytesResponse))
+                # print(hexlify(bytesResponse))
                 data = bytesResponse[-4:-2]
                 output['param'] = self._byteDataParamToInt(bytesResponse[11:13])
                 print('data:', str(hexlify(data)).upper())
-                #print(hexlify(bytesResponse), hexlify(data))
+                # print(hexlify(bytesResponse), hexlify(data))
                 output['data'] = int.from_bytes(data, byteorder='big')
             # Case where response data value is a float from a set param request
             # (e.g. 7001, process value setpoint)
@@ -256,11 +256,11 @@ class Watlow():
             # Case where response data value is an integer from a set param
             # request (e.g. param 8003, heat algorithm, where 62 means 'PID')
             # Hex byte 7: '09'
-            elif  bytesResponse[6] == 9:
-                #print(hexlify(bytesResponse))
+            elif bytesResponse[6] == 9:
+                # print(hexlify(bytesResponse))
                 data = bytesResponse[-4:-2]
                 print('data:', str(hexlify(data)).upper())
-                #print(hexlify(bytesResponse), hexlify(data))
+                # print(hexlify(bytesResponse), hexlify(data))
                 output['data'] = int.from_bytes(data, byteorder='big')
                 output['param'] = self._byteDataParamToInt(bytesResponse[10:12])
             # Case where data value is a float representing a process value
@@ -279,7 +279,8 @@ class Watlow():
 
     def read(self):
         '''
-        Reads the current temperature. Equivalent to `readParam(4001, float)`.
+        Reads the current temperature. This is a wrapper around `readParam()`
+        and is equivalent to `readParam(4001, float)`.
 
         Returns a dict containing the response data, parameter ID, and address.
         '''
@@ -333,8 +334,9 @@ class Watlow():
 
     def write(self, value):
         '''
-        Changes the watlow temperature setpoint. Takes a value (in degrees F by default), builds request, writes to watlow,
-        receives and returns response object.
+        Changes the watlow temperature setpoint. Takes a value (in degrees F by
+        default), builds request, writes to watlow, receives and returns response
+        object.
 
         * **value**: an int or float representing the new target setpoint in degrees F by default
 
@@ -362,7 +364,7 @@ class Watlow():
         Returns a dict containing the response data, parameter ID, and address.
         '''
         print(data_type)
-        request = self._buildSetRequest(param, value, data_type)
+        request = self._buildWriteRequest(param, value, data_type)
         print(param, str(hexlify(request)).upper())
         try:
             self.serial.write(request)

@@ -76,24 +76,43 @@ Using multiple temperature controllers on a single USB to RS485 converter::
 Reading Other Parameters
 ========================
 
+See the Watlow `user manual <https://www.watlow.com/-/media/documents/user-manuals/pm-pid-1.ashx>`_
+for more information about the different parameter IDs and their functions.
+
 The messaging structure for Watlow temperature controllers is set up to return data
 as integers or floats depending on the nature of the data. Often, ints are used
 to represent a state, such as in parameter ID 8003, the control loop heat algorithm.
-Here, a returned value of 71 corresponds to the PID algorithm, whereas 64 corresponds
-to a simpler "on-off" algorithm.
 
+`data_type` is not optional. Passing the incorrect type to `data_type` may result
+in an error (e.g. `watlow.readParam(7001, int)`). To see which data type
+each parameter expects, see the Watlow
+`user manual <https://www.watlow.com/-/media/documents/user-manuals/pm-pid-1.ashx>`_.
+
+In some cases, specifying the wrong data type (e.g. `watlow.readParam(8003, float)`)
+will result in the instance of `Watlow` reading characters from a separate
+queued message if multiple controllers are being used on the same USB/RS485 port
+without any async handling.
+
+Here, a returned value of 71 for parameter 8003 corresponds to the PID algorithm.
 We can read the state of 8003 like so::
 
 	from pywatlow.watlow import Watlow
 	watlow = Watlow(port='COM5', address=1)
 
+	# Read the current heat algorithm
 	print(watlow.readParam(8003, int))
+
+	# Errors:
+	# Here the incorrect data type is given
+	print(watlow.readParam(7001, int))
 
 	##### Returns #####
 	{'address': 1, 'param': 8003, 'data': 71, 'error': None}  # 71 --> PID algorithm
 
-See the Watlow `user manual <https://www.watlow.com/-/media/documents/user-manuals/pm-pid-1.ashx>`_
-for more information about the different parameter IDs and their functions.
+If the user wishes to avoid parameters altogether, basic functionality (read
+temp/setpoint and write temperature) can be achieved with wrapper functions
+`read()`, `readSetpoint()`, and `write()`, described above. Other parameters can
+be set at the controllers using the physical buttons and hardware menu.
 
 Setting Other Parameters
 ========================
@@ -103,12 +122,8 @@ The message structure required for the set request depends on the data type (int
 pywatlow will build the message based on this data type, which can be specified by
 passing the type class (either `int` or `float`) to the `data_type` argument.
 
-`data_type` is not optional. Passing the incorrect type to`data_type` will result
-in an error (e.g. `watlow.writeParam(7001, 200.0, int)`). To see which data type
-each parameter expects, see the Watlow
-`user manual <https://www.watlow.com/-/media/documents/user-manuals/pm-pid-1.ashx>`_.
-
-Example::
+If instead of a PID algorithm we would like something relatively simple like an
+"on-off" algorithm, we can set the value of parameter 8003 to 64::
 
 	from pywatlow.watlow import Watlow
 	watlow = Watlow(port='COM5', address=1)
@@ -117,7 +132,8 @@ Example::
 	print(watlow.writeParam(8003, 64, int))
 	print(watlow.writeParam(8003, 71, int))
 
-	# Here the incorrect data type is given:
+	# Errors:
+	# Here the incorrect data type is given
 	print(watlow.writeParam(8003, 71, float))
 
 	##### Returns #####
