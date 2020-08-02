@@ -22,7 +22,7 @@ def test_watlow():
 class TestWatlow:
     '''
     Test suite for the Watlow class
-    * Each command was varified with a response from Watlow device
+    * Each command was verified with a response from Watlow device
     * Each response was a real response from a Watlow device
     '''
 
@@ -250,7 +250,7 @@ class TestWatlow:
         ]
 
         for test in test_data:
-            setRequest = Watlow(serial=None, address=test[3])._buildSetRequest(dataParam=test[0], value=test[1], val_type=test[2])
+            setRequest = Watlow(serial=None, address=test[3])._buildSetRequest(dataParam=test[0], value=test[1], data_type=test[2])
             assert setRequest == unhexlify(test[4]), "param: {0}, val: {1}, type: {2}, addr: {3}, request: {4}".format(*test)
 
     def test_c_to_f(self):

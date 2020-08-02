@@ -8,7 +8,9 @@ import serial as ser
 
 class Watlow():
     '''
-    Object representing a Watlow PID temperature controller.
+    Object representing a Watlow PID temperature controller. This class
+    facilitates the generation and parsing of BACnet TP/MS messages to and from
+    Watlow temperature controllers.
 
     * **serial**: serial object (see pySerial's serial.Serial class) or `None`
     * **port** (str): string representing the serial port or `None`
@@ -16,7 +18,8 @@ class Watlow():
     * **address** (int): Watlow controller address (found in the setup menu). Acceptable values are 1 through 16.
 
     `timeout` and `port` are not necessary if a serial object was already passed
-    with those arguments.
+    with those arguments. The baudrate for Watlow temperature controllers is 38400
+    and hardcoded.
     '''
     def __init__(self, serial=None, port=None, timeout=0.5, address=1):
         self.timeout = timeout
@@ -151,7 +154,7 @@ class Watlow():
 
         return request
 
-    def _buildSetRequest(self, dataParam, value, val_type):
+    def _buildSetRequest(self, dataParam, value, data_type):
         '''
         Takes the set point temperature value, converts to bytes objects, calls
         internal functions to calc check bytes, and assembles/returns the request
@@ -165,11 +168,11 @@ class Watlow():
         requestParam = '05'
         zone = str(9 + self.address)
         dataParam = self._intDataParamToHex(dataParam)
-        if val_type == float:
+        if data_type == float:
             additionalHeader = '00000a'
             hexData = '0104' + dataParam + '0108'
             value = struct.pack('>f', float(value))
-        elif val_type == int:
+        elif data_type == int:
             additionalHeader = '030009'
             hexData = '0104' + dataParam + '010f01'
             value = value.to_bytes(2, 'big')
@@ -274,12 +277,42 @@ class Watlow():
 
             return output
 
-    def readParam(self, param):
+    def read(self):
+        '''
+        Reads the current temperature. Equivalent to `readParam(4001, float)`.
+
+        Returns a dict containing the response data, parameter ID, and address.
+        '''
+        return self.readParam(4001, float)
+
+    def readSetpoint(self):
+        '''
+        Reads the current setpoint. This is a wrapper around `readParam()` and is
+        equivalent to `readParam(7001, float)`.
+
+        Returns a dict containing the response data, parameter ID, and address.
+        '''
+        return self.readParam(7001, float)
+
+    def readParam(self, param, data_type):
         '''
         Takes a parameter and writes data to the watlow controller at
-        object's internal address.
+        object's internal address. Using this function requires knowing the data
+        type for the parameter (int or float). See the Watlow
+        `user manual <https://www.watlow.com/-/media/documents/user-manuals/pm-pid-1.ashx>`_
+        for individual parameters and the Usage section of these docs.
 
         * **param**: a four digit integer corresponding to a Watlow parameter (e.g. 4001, 7001)
+        * **data_type**: the Python type representing the data value type (i.e. `int` or `float`)
+
+        `data_type` is used to determine how many characters to read
+        following the controller's response. If int is passed when the data type
+        should be float, it will not read the entire message and will throw an
+        error. If float is passed when it should be int, it will timeout,
+        possibly reading correctly. If multiple instances of `Watlow()` are using
+        the same serial port for different controllers it will read too many
+        characters. It is best to be completely sure which data type is being used
+        by each parameter (`int` or `float`).
 
         Returns a dict containing the response data, parameter ID, and address.
         '''
@@ -290,66 +323,56 @@ class Watlow():
         except Exception as e:
             print('Exception: ', e)
         else:
-            response = self.serial.read(21)
-            print(param, 'reponse:', str(hexlify(response)).upper())
+            if data_type == float:
+                response = self.serial.read(21)
+            elif data_type == int:
+                response = self.serial.read(20)
+            print(param, 'response:', str(hexlify(response)).upper())
             output = self._parseResponse(response)
             return output
 
-    def setTemp(self, value):
+    def write(self, value):
         '''
         Changes the watlow temperature setpoint. Takes a value (in degrees F by default), builds request, writes to watlow,
         receives and returns response object.
 
         * **value**: an int or float representing the new target setpoint in degrees F by default
 
-        This function is equivalent to `setParam(7001, value, float)`.
+        This is a wrapper around `writeParam()` and is equivalent to
+        `writeParam(7001, value, float)`.
 
         Returns a dict containing the response data, parameter ID, and address.
         '''
-        request = self._buildSetRequest(7001, value, float)
-        print(7001, str(hexlify(request)).upper())
+        return self.writeParam(7001, value, float)
 
-        try:
-            self.serial.write(request)
-        except Exception as e:
-            print('Exception: ', e)
-        else:
-            bytesResponse = self.serial.read(20)
-            print(7001, 'reponse:', str(hexlify(bytesResponse)).upper())
-            output = self._parseResponse(bytesResponse)
-            return output
-
-    def setParam(self, param, value, val_type=None):
+    def writeParam(self, param, value, data_type):
         '''
-        Changes the value of the passed watlow parameter ID
+        Changes the value of the passed watlow parameter ID. Using this function
+        requires knowing the data type for the parameter (int or float).
+        See the Watlow
+        `user manual <https://www.watlow.com/-/media/documents/user-manuals/pm-pid-1.ashx>`_
+        for individual parameters and the Usage section of these docs.
 
         * **value**: an int or float representing the new target setpoint in degrees F by default
-        * **val_type** (optional): the Python type representing the data value type (i.e. `int` or `float`)
+        * **data_type**: the Python type representing the data value type (i.e. `int` or `float`)
 
-        `val_type` is used to determine how the BACnet TP/MS message will be constructed.
-        If `val_type` is `None`, pywatlow will call `readParam` on the passed parameter ID
-        to determine the returned value's type instead.
+        `data_type` is used to determine how the BACnet TP/MS message will be constructed
+        and how many serial characters to read following the controller's response.
 
         Returns a dict containing the response data, parameter ID, and address.
         '''
-
-        # If no val_type is specified, setParam determines the type expected
-        # from the data of a self.readParam response parsed using _parseResponse
-        if not val_type:
-            print('Send read request')
-            response = self.readParam(param)
-            val_type = type(response['data'])
-            if response['error']:
-                raise response['error']
-        print(val_type)
-        request = self._buildSetRequest(param, value, val_type)
+        print(data_type)
+        request = self._buildSetRequest(param, value, data_type)
         print(param, str(hexlify(request)).upper())
         try:
             self.serial.write(request)
         except Exception as e:
             print('Exception: ', e)
         else:
-            bytesResponse = self.serial.read(20)
+            if data_type == float:
+                bytesResponse = self.serial.read(20)
+            elif data_type == int:
+                bytesResponse = self.serial.read(19)
             print(param, 'reponse:', str(hexlify(bytesResponse)).upper())
             output = self._parseResponse(bytesResponse)
             return output

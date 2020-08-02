@@ -68,8 +68,8 @@ param_default_dict_two = [
     #print((unhexlify(watlow._intDataParamToHex(param)), param))
     print(param, watlow.readParam(param)['data'])
     #print(param, watlow._formatDataParam(param))'''
-'''for i in param_default_dict_two:
-    print(i[0], watlow.setParam(i[0], i[1], i[2]))'''
+for i in param_default_dict_two:
+    print(i[0], watlow.readParam(i[0], i[2]))
 
 #print(watlow.setParam(4001, 100, float))
 #print(hexlify(b'U\xff\x06\x00\x10\x00\x02\x8f\x02\x85R\xef'))
