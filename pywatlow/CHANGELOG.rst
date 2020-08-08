@@ -2,7 +2,12 @@
 Changelog
 =========
 
-0.0.0 (2020-04-28)
+0.1.0 (2020-08-08)
 ------------------
 
-* First release on PyPI.
+* Added basic functionality
+
+  * Reading/writing of Watlow parameters
+  * Request message generation
+  * Calculation of check bytes
+  * Response message parsing

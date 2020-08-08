@@ -307,9 +307,9 @@ class Watlow():
         * **data_type**: the Python type representing the data value type (i.e. `int` or `float`)
 
         `data_type` is used to determine how many characters to read
-        following the controller's response. If int is passed when the data type
-        should be float, it will not read the entire message and will throw an
-        error. If float is passed when it should be int, it will timeout,
+        following the controller's response. If `int` is passed when the data type
+        should be `float`, it will not read the entire message and will throw an
+        error. If `float` is passed when it should be `int`, it will timeout,
         possibly reading correctly. If multiple instances of `Watlow()` are using
         the same serial port for different controllers it will read too many
         characters. It is best to be completely sure which data type is being used
