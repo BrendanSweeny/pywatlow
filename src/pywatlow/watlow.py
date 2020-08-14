@@ -239,38 +239,30 @@ class Watlow():
             # from a read request
             # Hex byte 7: '0a', Hex bytes 15, 16: 0F, 01
             if bytesResponse[6] == 10 and bytesResponse[-6] == 15 and bytesResponse[-5] == 1:
-                # print(hexlify(bytesResponse))
                 data = bytesResponse[-4:-2]
                 output['param'] = self._byteDataParamToInt(bytesResponse[11:13])
-                print('data:', str(hexlify(data)).upper())
-                # print(hexlify(bytesResponse), hexlify(data))
                 output['data'] = int.from_bytes(data, byteorder='big')
             # Case where response data value is a float from a set param request
             # (e.g. 7001, process value setpoint)
             # Hex byte 7: '0a', Hex byte 14: '08'
             elif bytesResponse[6] == 10 and bytesResponse[-7] == 8:
                 ieee_754 = hexlify(bytesResponse[-6:-2])
-                print('ieee_754:', str(hexlify(ieee_754)).upper())
                 output['data'] = struct.unpack('>f', unhexlify(ieee_754))[0]
                 output['param'] = self._byteDataParamToInt(bytesResponse[10:12])
             # Case where response data value is an integer from a set param
             # request (e.g. param 8003, heat algorithm, where 62 means 'PID')
             # Hex byte 7: '09'
             elif bytesResponse[6] == 9:
-                # print(hexlify(bytesResponse))
                 data = bytesResponse[-4:-2]
-                print('data:', str(hexlify(data)).upper())
-                # print(hexlify(bytesResponse), hexlify(data))
-                output['data'] = int.from_bytes(data, byteorder='big')
                 output['param'] = self._byteDataParamToInt(bytesResponse[10:12])
+                output['data'] = int.from_bytes(data, byteorder='big')
             # Case where data value is a float representing a process value
             # (e.g. 4001, where current temp of 50.0 is returned)
             # Hex byte 7: '0b'
             elif bytesResponse[6] == 11:
                 ieee_754 = bytesResponse[-6:-2]
-                print('ieee_754:', str(hexlify(ieee_754)).upper())
-                output['data'] = struct.unpack('>f', ieee_754)[0]
                 output['param'] = self._byteDataParamToInt(bytesResponse[11:13])
+                output['data'] = struct.unpack('>f', ieee_754)[0]
             # Other cases, such as response from trying to write a read-only parameter:
             else:
                 output['error'] = Exception('Received a message that could not be parsed from address {0}'.format(self.address))
@@ -318,7 +310,6 @@ class Watlow():
         Returns a dict containing the response data, parameter ID, and address.
         '''
         request = self._buildReadRequest(param)
-        print(param, str(hexlify(request)).upper())
         try:
             self.serial.write(request)
         except Exception as e:
@@ -328,7 +319,6 @@ class Watlow():
                 response = self.serial.read(21)
             elif data_type == int:
                 response = self.serial.read(20)
-            print(param, 'response:', str(hexlify(response)).upper())
             output = self._parseResponse(response)
             return output
 
@@ -363,9 +353,7 @@ class Watlow():
 
         Returns a dict containing the response data, parameter ID, and address.
         '''
-        print(data_type)
         request = self._buildWriteRequest(param, value, data_type)
-        print(param, str(hexlify(request)).upper())
         try:
             self.serial.write(request)
         except Exception as e:
@@ -375,6 +363,5 @@ class Watlow():
                 bytesResponse = self.serial.read(20)
             elif data_type == int:
                 bytesResponse = self.serial.read(19)
-            print(param, 'reponse:', str(hexlify(bytesResponse)).upper())
             output = self._parseResponse(bytesResponse)
             return output
