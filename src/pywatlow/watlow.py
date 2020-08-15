@@ -39,12 +39,6 @@ class Watlow():
         self.serial.flush()
         self.serial.close()
 
-    def _f_to_c(self, f):
-        return (float(f) - 32) * (5/9)
-
-    def _c_to_f(self, c):
-        return (float(c) * (9/5)) + 32
-
     def _headerCheckByte(self, headerBytes):
         '''
         Takes the full header byte array bytes[0] through bytes[6] of the full
