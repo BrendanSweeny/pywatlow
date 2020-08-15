@@ -26,7 +26,7 @@ This is equivalent to calling `Watlow(port='COM5',address=1).readSetpoint()`::
 	{'address': 1, 'data': 60.0, 'error': None}
 
 Change the setpoint temperature (degrees Celsius).
-This is equivalent to calling `Watlow(port='COM5',address=1).write(50)`::
+This is equivalent to calling `Watlow(port='COM5',address=1).write(60)`::
 
 	# Change the setpoint of the Watlow controller
 	# at address 1 on serial port COM5:
