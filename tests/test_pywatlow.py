@@ -1,8 +1,6 @@
 
 from binascii import unhexlify
 
-import pytest
-
 from pywatlow.cli import main
 from pywatlow.watlow import Watlow
 
@@ -249,36 +247,6 @@ class TestWatlow:
         for test in test_data:
             setRequest = Watlow(serial=None, address=test[3])._buildWriteRequest(dataParam=test[0], value=test[1], data_type=test[2])
             assert setRequest == unhexlify(test[4]), "param: {0}, val: {1}, type: {2}, addr: {3}, request: {4}".format(*test)
-
-    def test_c_to_f(self):
-        '''
-        Tests C to F temperature conversion
-        '''
-        test_data = [
-            (32, 89.6),
-            (0, 32),
-            (-9.8765, 14.2223),
-            (-45, -49)
-        ]
-
-        for test in test_data:
-            convertedTemp = Watlow(serial=None)._c_to_f(test[0])
-            assert convertedTemp == pytest.approx(test[1])
-
-    def test_f_to_c(self):
-        '''
-        Tests F to C temperature conversion
-        '''
-        test_data = [
-            (89.6, 32),
-            (30, -1.1111111111),
-            (-1.23, -18.4611),
-            (45, 7.2222222222)
-        ]
-
-        for test in test_data:
-            convertedTemp = Watlow(serial=None)._f_to_c(test[0])
-            assert convertedTemp == pytest.approx(test[1])
 
     def test_validateResponse(self):
         '''
