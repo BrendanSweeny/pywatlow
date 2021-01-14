@@ -163,7 +163,7 @@ class Watlow():
         dataParam = self._intDataParamToHex(dataParam)
         if data_type == float:
             additionalHeader = '00000a'
-            hexData = '0104' + dataParam + instance +'08'
+            hexData = '0104' + dataParam + instance + '08'
             value = struct.pack('>f', float(value))
         elif data_type == int:
             additionalHeader = '030009'
