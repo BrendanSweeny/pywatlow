@@ -112,7 +112,7 @@ class Watlow():
         # (e.g. b'\x1a\x1d' to 26029)
         return int(str(hexParam[0]) + format(hexParam[1], '03d'))
 
-    def _buildReadRequest(self, dataParam):
+    def _buildReadRequest(self, dataParam, instance='01'):
         '''
         Takes the watlow parameter ID, converts to bytes objects, calls
         internal functions to calc check bytes, and assembles/returns the request
@@ -129,7 +129,6 @@ class Watlow():
         # Request Data Parameters
         additionalData = '010301'
         dataParam = self._intDataParamToHex(dataParam)
-        instance = '01'
         hexData = additionalData + dataParam + instance
 
         # Convert input strings to bytes:
@@ -148,7 +147,7 @@ class Watlow():
 
         return request
 
-    def _buildWriteRequest(self, dataParam, value, data_type):
+    def _buildWriteRequest(self, dataParam, value, data_type, instance='01'):
         '''
         Takes the set point temperature value, converts to bytes objects, calls
         internal functions to calc check bytes, and assembles/returns the request
@@ -164,7 +163,7 @@ class Watlow():
         dataParam = self._intDataParamToHex(dataParam)
         if data_type == float:
             additionalHeader = '00000a'
-            hexData = '0104' + dataParam + '0108'
+            hexData = '0104' + dataParam + instance +'08'
             value = struct.pack('>f', float(value))
         elif data_type == int:
             additionalHeader = '030009'
@@ -263,25 +262,27 @@ class Watlow():
 
             return output
 
-    def read(self):
+    def read(self, instance='01'):
         '''
         Reads the current temperature. This is a wrapper around `readParam()`
-        and is equivalent to `readParam(4001, float)`.
+        and is equivalent to `readParam(4001, float, instance)`.
 
         Returns a dict containing the response data, parameter ID, and address.
+        * **instance**: a two digit string corresponding to the channel to read (e.g. '01', '05')
         '''
-        return self.readParam(4001, float)
+        return self.readParam(4001, float, instance)
 
-    def readSetpoint(self):
+    def readSetpoint(self, instance='01'):
         '''
         Reads the current setpoint. This is a wrapper around `readParam()` and is
-        equivalent to `readParam(7001, float)`.
+        equivalent to `readParam(7001, float, instance)`.
 
         Returns a dict containing the response data, parameter ID, and address.
+        * **instance**: a two digit string corresponding to the channel to read (e.g. '01', '05')
         '''
-        return self.readParam(7001, float)
+        return self.readParam(7001, float, instance='01')
 
-    def readParam(self, param, data_type):
+    def readParam(self, param, data_type, instance='01'):
         '''
         Takes a parameter and writes data to the watlow controller at
         object's internal address. Using this function requires knowing the data
@@ -291,6 +292,7 @@ class Watlow():
 
         * **param**: a four digit integer corresponding to a Watlow parameter (e.g. 4001, 7001)
         * **data_type**: the Python type representing the data value type (i.e. `int` or `float`)
+        * **instance**: a two digit string corresponding to the channel to read (e.g. '01', '05')
 
         `data_type` is used to determine how many characters to read
         following the controller's response. If `int` is passed when the data type
@@ -303,7 +305,7 @@ class Watlow():
 
         Returns a dict containing the response data, parameter ID, and address.
         '''
-        request = self._buildReadRequest(param)
+        request = self._buildReadRequest(param, instance)
         try:
             self.serial.write(request)
         except Exception as e:
@@ -316,22 +318,23 @@ class Watlow():
             output = self._parseResponse(response)
             return output
 
-    def write(self, value):
+    def write(self, value, instance='01'):
         '''
         Changes the watlow temperature setpoint. Takes a value (in degrees F by
         default), builds request, writes to watlow, receives and returns response
         object.
 
         * **value**: an int or float representing the new target setpoint in degrees F by default
+        * **instance**: a two digit string correspnding to the channel to set (e.g. '01', '05')
 
         This is a wrapper around `writeParam()` and is equivalent to
-        `writeParam(7001, value, float)`.
+        `writeParam(7001, value, float, instance)`.
 
         Returns a dict containing the response data, parameter ID, and address.
         '''
-        return self.writeParam(7001, value, float)
+        return self.writeParam(7001, value, float, instance)
 
-    def writeParam(self, param, value, data_type):
+    def writeParam(self, param, value, data_type, instance='01'):
         '''
         Changes the value of the passed watlow parameter ID. Using this function
         requires knowing the data type for the parameter (int or float).
@@ -347,7 +350,7 @@ class Watlow():
 
         Returns a dict containing the response data, parameter ID, and address.
         '''
-        request = self._buildWriteRequest(param, value, data_type)
+        request = self._buildWriteRequest(param, value, data_type, instance)
         try:
             self.serial.write(request)
         except Exception as e:
