@@ -53,7 +53,7 @@ Overview
 
 .. |commits-since| image:: https://img.shields.io/github/commits-since/BrendanSweeny/pywatlow/v0.1.1.svg
     :alt: Commits since latest release
-    :target: https://github.com/BrendanSweeny/pywatlow/compare/v0.1.1.master
+    :target: https://github.com/BrendanSweeny/pywatlow/compare/v0.1.1...master
 
 
 
