@@ -2,6 +2,10 @@
 Changelog
 =========
 
+0.1.2 (2021-01-13)
+------------------
+* added support for multiple instances, like in the RM series controllers with multiple channels
+
 0.1.1 (2020-08-15)
 ------------------
 
