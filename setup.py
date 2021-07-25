@@ -25,7 +25,7 @@ def read(*names, **kwargs):
 
 setup(
     name='pywatlow',
-    version='0.1.2',
+    version='0.1.3',
     license='LGPL-3.0-only',
     description='A Python driver for the Watlow EZ-Zone PM3 temperature controller standard bus protocol',
     long_description='%s\n%s' % (
