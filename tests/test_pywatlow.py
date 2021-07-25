@@ -245,7 +245,10 @@ class TestWatlow:
         ]
 
         for test in test_data:
-            setRequest = Watlow(serial=None, address=test[3])._buildWriteRequest(dataParam=test[0], value=test[1], data_type=test[2], instance=test[4])
+            setRequest = Watlow(serial=None, address=test[3])._buildWriteRequest(dataParam=test[0],
+                                                                                 value=test[1],
+                                                                                 data_type=test[2],
+                                                                                 instance=test[4])
             assert setRequest == unhexlify(test[5]), "param: {0}, val: {1}, type: {2}, addr: {3}, instance: {4} request: {5}".format(*test)
 
     def test_validateResponse(self):
