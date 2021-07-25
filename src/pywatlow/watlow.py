@@ -167,7 +167,7 @@ class Watlow():
             value = struct.pack('>f', float(value))
         elif data_type == int:
             additionalHeader = '030009'
-            hexData = '0104' + dataParam + '010f01'
+            hexData = '0104' + dataParam + instance + '0f01'
             value = value.to_bytes(2, 'big')
 
         # Request Header String:
