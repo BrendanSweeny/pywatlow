@@ -114,6 +114,9 @@ temp/setpoint and write temperature) can be achieved with wrapper functions
 `read()`, `readSetpoint()`, and `write()`, described above. Other parameters can
 be set at the controllers using the physical buttons and hardware menu.
 
+Note: All methods of the Watlow object that read/write parameters use an instance
+of 1 unless specified (e.g. `watlow.readParam(7001, int, instance='01')`)
+
 Setting Other Parameters
 ========================
 

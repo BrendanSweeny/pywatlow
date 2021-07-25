@@ -167,7 +167,7 @@ class Watlow():
             value = struct.pack('>f', float(value))
         elif data_type == int:
             additionalHeader = '030009'
-            hexData = '0104' + dataParam + '010f01'
+            hexData = '0104' + dataParam + instance + '0f01'
             value = value.to_bytes(2, 'big')
 
         # Request Header String:
@@ -325,7 +325,7 @@ class Watlow():
         object.
 
         * **value**: an int or float representing the new target setpoint in degrees F by default
-        * **instance**: a two digit string correspnding to the channel to set (e.g. '01', '05')
+        * **instance**: a two digit string corresponding to the channel to set (e.g. '01', '05')
 
         This is a wrapper around `writeParam()` and is equivalent to
         `writeParam(7001, value, float, instance)`.
@@ -344,6 +344,7 @@ class Watlow():
 
         * **value**: an int or float representing the new target setpoint in degrees F by default
         * **data_type**: the Python type representing the data value type (i.e. `int` or `float`)
+        * **instance**: a two digit string corresponding to the channel to read (e.g. '01', '05')
 
         `data_type` is used to determine how the BACnet TP/MS message will be constructed
         and how many serial characters to read following the controller's response.

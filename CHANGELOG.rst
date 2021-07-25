@@ -2,6 +2,10 @@
 Changelog
 =========
 
+0.1.3 (2021-07-25)
+------------------
+* Fixed support for multiple instances where the parameter data type is an integer
+
 0.1.2 (2021-01-13)
 ------------------
 * added support for multiple instances, like in the RM series controllers with multiple channels
