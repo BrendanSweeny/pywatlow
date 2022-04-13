@@ -286,6 +286,7 @@ class TestWatlow:
             ('55ff060010000b8802030104010108468f3abe4356', 2, False),  # Incorrect dataChk
             ('55FF060010000B8902030104010108468F3638DD0E', 2, False),  # Incorrect headerChk
             ('55ff06001f000a7702040701010842a20000adcc', 16, True), # Valid response to write request
+            ('55ff06001f000b8902030107010108429d00007599', 16, True), # Valid response to read request
         ]
 
         for test in tests:
