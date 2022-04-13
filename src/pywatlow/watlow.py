@@ -206,7 +206,7 @@ class Watlow():
         # python will interpret a single hex character)
         headerChkReceived = bytearray([bytesResponse[7]])
         dataCheckRecieved = bytesResponse[-2:]
-        addressReceived = int(bytesResponse.hex()[8:10]) - 9
+        addressReceived = bytesResponse[4] - 15
         if (headerChkReceived == self._headerCheckByte(bytesResponse[0:7]) and
                 dataCheckRecieved == self._dataCheckByte(bytesResponse[8:-2]) and
                 addressReceived == self.address):
