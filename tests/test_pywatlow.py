@@ -70,6 +70,8 @@ class TestWatlow:
             '55ff051100000661010301040101e399': b'\x61',
             # Request, Address 2, '7001'
             '55ff0511000006610103010701018776': b'\x61',
+            # Request, Address 16, '7001'
+            '55ff051f000006160103010701018776': b'\x16',
             # Responses (not necessarily from requests above)
             # Not necessary for function to calculate below correctly in practice
             '55FF060010000B8802030104010108468F3638DD0E': b'\x88',
@@ -221,9 +223,6 @@ class TestWatlow:
             (7001, 78.5, float, 1, '01', '55ff051000000aec010407010108429d0000ad74'),
             (7001, 80, float, 2, '01', '55FF051100000A6501040701010842A000007C0D'),
             (7001, 81, float, 16, '01', '55ff051f00000a1201040701010842a20000c4b8'),
-            ('7001', 81, float, 16, '01', '55ff051f00000a1201040701010842a20000c4b8'),
-            (7001, 80, float, 16, '01', '55ff051f00000a1201040701010842a000007c0d'),
-            (7001, 78, float, 16, '01', '55ff051f00000a12010407010108429c0000712e'),
             (7001, 78.5, float, 16, '01', '55ff051f00000a12010407010108429d0000ad74'),
             (8003, 71, int, 1, '01', '55FF05100300094601040803010F0100478FED'),
             ('8003', 71, int, 1, '01', '55FF05100300094601040803010F0100478FED'),
@@ -285,7 +284,8 @@ class TestWatlow:
             ('55ff060011000b1002030104010108468f3c3c89b5', 2, True),
             ('55ff060011000b1002030104010108468f393a07ae', 2, True),
             ('55ff060010000b8802030104010108468f3abe4356', 2, False),  # Incorrect dataChk
-            ('55FF060010000B8902030104010108468F3638DD0E', 2, False)  # Incorrect headerChk
+            ('55FF060010000B8902030104010108468F3638DD0E', 2, False),  # Incorrect headerChk
+            ('55ff06001f000a7702040701010842a20000adcc', 16, True), # Valid response to write request
         ]
 
         for test in tests:
@@ -306,6 +306,7 @@ class TestWatlow:
             ('55FF06031100097702040803010F010047883B', 8003, 2, 71, False),
             ('55FF06031100097702040803010F010047883B', None, 1, None, True),  # Param: 8003, error from wrong address
             ('55FF060011000AEE02040701010842A000001579', 7001, 2, 80.0, False),
+            ('55ff06001f000a7702040701010842a20000adcc', 7001, 16, 81.0, False),
             ('55FF060011000B1002030104010108451E40B2F377', 4001, 2, 2532.04345703125, False),
             ('55FF0600110002170280FFB8', None, 2, None, True)  # Param: 4001, error from trying to write to read-only param
         ]
