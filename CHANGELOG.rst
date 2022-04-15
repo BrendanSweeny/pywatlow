@@ -2,6 +2,10 @@
 Changelog
 =========
 
+0.1.4 (2022-04-15)
+------------------
+* Fixed message generation/parsing for addresses 11 through 16
+
 0.1.3 (2021-07-25)
 ------------------
 * Fixed support for multiple instances where the parameter data type is an integer
