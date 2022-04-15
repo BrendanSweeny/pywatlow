@@ -51,9 +51,9 @@ Overview
     :alt: Supported implementations
     :target: https://pypi.org/project/pywatlow
 
-.. |commits-since| image:: https://img.shields.io/github/commits-since/BrendanSweeny/pywatlow/v0.1.3.svg
+.. |commits-since| image:: https://img.shields.io/github/commits-since/BrendanSweeny/pywatlow/v0.1.4.svg
     :alt: Commits since latest release
-    :target: https://github.com/BrendanSweeny/pywatlow/compare/v0.1.3...master
+    :target: https://github.com/BrendanSweeny/pywatlow/compare/v0.1.4...master
 
 
 
