@@ -112,6 +112,13 @@ class Watlow():
         # (e.g. b'\x1a\x1d' to 26029)
         return int(str(hexParam[0]) + format(hexParam[1], '03d'))
 
+    def _buildZone(self, address):
+        '''
+        Generates the zone portion of a message from the watlow address.
+        Returns the hexidecimal form as a string (without "0x")
+        '''
+        return format(address + 15, 'x')
+
     def _buildReadRequest(self, dataParam, instance='01'):
         '''
         Takes the watlow parameter ID, converts to bytes objects, calls
@@ -122,7 +129,7 @@ class Watlow():
         BACnetPreamble = '55ff'
         requestParam = '05'
         # Zone corresponds to the address parameter in setup (e.g. '10' = 1, '11' = 2, etc.)
-        zone = str(9 + self.address)
+        zone = self._buildZone(self.address)
         additionalHeader = '000006'
         hexHeader = BACnetPreamble + requestParam + zone + additionalHeader
 
@@ -159,7 +166,7 @@ class Watlow():
         '''
         BACnetPreamble = '55ff'
         requestParam = '05'
-        zone = str(9 + self.address)
+        zone = self._buildZone(self.address)
         dataParam = self._intDataParamToHex(dataParam)
         if data_type == float:
             additionalHeader = '00000a'
@@ -199,7 +206,7 @@ class Watlow():
         # python will interpret a single hex character)
         headerChkReceived = bytearray([bytesResponse[7]])
         dataCheckRecieved = bytesResponse[-2:]
-        addressReceived = int(bytesResponse.hex()[8:10]) - 9
+        addressReceived = bytesResponse[4] - 15
         if (headerChkReceived == self._headerCheckByte(bytesResponse[0:7]) and
                 dataCheckRecieved == self._dataCheckByte(bytesResponse[8:-2]) and
                 addressReceived == self.address):
